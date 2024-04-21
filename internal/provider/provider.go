@@ -119,17 +119,13 @@ func (p *uthoProvider) Configure(ctx context.Context, req provider.ConfigureRequ
 // DataSources defines the data sources implemented in the provider.
 func (p *uthoProvider) DataSources(_ context.Context) []func() datasource.DataSource {
 	return []func() datasource.DataSource{
-		// NewServerDataSource,
-		// NewLocationDataSource,
 		NewAccountDataSource,
-		// NewImagesDataSource,
 	}
 }
 
 // Resources defines the resources implemented in the provider.
 func (p *uthoProvider) Resources(_ context.Context) []func() resource.Resource {
 	return []func() resource.Resource{
-		// NewServerResource,
-		// NewPublicKeyResource,
+		NewDomainResource,
 	}
 }
