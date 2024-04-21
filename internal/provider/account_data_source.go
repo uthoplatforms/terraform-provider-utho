@@ -21,27 +21,6 @@ type AccountDataSource struct {
 }
 
 type (
-	// AccountDataSourceModel struct {
-	// 	LocationId types.String   `tfsdk:"location_id"`
-	// 	Account    []AccountModel `tfsdk:"accounts"`
-	// }
-	// AccountModel struct {
-	// 	Slug  types.String `tfsdk:"slug"`
-	// 	Name  types.String `tfsdk:"name"`
-	// 	RAM   types.Int64  `tfsdk:"ram"`
-	// 	Disk  types.Int64  `tfsdk:"disk"`
-	// 	CPU   CPU          `tfsdk:"cpu"`
-	// 	Price Price        `tfsdk:"price"`
-	// }
-	// CPU struct {
-	// 	Cores   types.Int64 `tfsdk:"cores"`
-	// 	Threads types.Int64 `tfsdk:"threads"`
-	// }
-	// Price struct {
-	// 	Amount   types.Int64  `tfsdk:"amount"`
-	// 	Currency types.String `tfsdk:"currency"`
-	// }
-
 	AccountDataSourceModel struct {
 		User User `tfsdk:"user"`
 	}
@@ -59,12 +38,12 @@ type (
 		Postcode                types.String  `tfsdk:"postcode"`
 		Mobile                  types.String  `tfsdk:"mobile"`
 		Mobilecc                types.String  `tfsdk:"mobilecc"`
-		Gstnumber               types.String  `tfsdk:"gstnumber"`
+		Gstnumber               types.String  `tfsdk:"gst_number"`
 		SupportneedTitle        types.String  `tfsdk:"supportneed_title"`
 		SupportneedUsecase      types.String  `tfsdk:"supportneed_usecase"`
-		SupportneedBusinesstype types.String  `tfsdk:"supportneed_businesstype"`
-		SupportneedMonthlyspend types.String  `tfsdk:"supportneed_monthlyspend"`
-		SupportneedEmployeesize types.String  `tfsdk:"supportneed_employeesize"`
+		SupportneedBusinesstype types.String  `tfsdk:"supportneed_business_type"`
+		SupportneedMonthlyspend types.String  `tfsdk:"supportneed_monthly_spend"`
+		SupportneedEmployeesize types.String  `tfsdk:"supportneed_employee_size"`
 		SupportFieldsRequired   types.String  `tfsdk:"support_fields_required"`
 		TwofaSettings           types.String  `tfsdk:"twofa_settings"`
 		Currencyprefix          types.String  `tfsdk:"currencyprefix"`
@@ -117,48 +96,48 @@ func (d *AccountDataSource) Schema(_ context.Context, _ datasource.SchemaRequest
 				Computed:    true,
 				Description: "User model",
 				Attributes: map[string]schema.Attribute{
-					"id":                       schema.StringAttribute{Computed: true, Description: "Id"},
-					"type":                     schema.StringAttribute{Computed: true, Description: "Type"},
-					"fullname":                 schema.StringAttribute{Computed: true, Description: "Fullname"},
-					"company":                  schema.StringAttribute{Computed: true, Description: "Company"},
-					"email":                    schema.StringAttribute{Computed: true, Description: "Email"},
-					"address":                  schema.StringAttribute{Computed: true, Description: "Address"},
-					"city":                     schema.StringAttribute{Computed: true, Description: "City"},
-					"state":                    schema.StringAttribute{Computed: true, Description: "State"},
-					"country":                  schema.StringAttribute{Computed: true, Description: "Country"},
-					"postcode":                 schema.StringAttribute{Computed: true, Description: "Postcode"},
-					"mobile":                   schema.StringAttribute{Computed: true, Description: "Mobile"},
-					"mobilecc":                 schema.StringAttribute{Computed: true, Description: "Mobilecc"},
-					"gstnumber":                schema.StringAttribute{Computed: true, Description: "Gstnumber"},
-					"supportneed_title":        schema.StringAttribute{Computed: true, Description: "Supportneed Title"},
-					"supportneed_usecase":      schema.StringAttribute{Computed: true, Description: "Supportneed Usecase"},
-					"supportneed_businesstype": schema.StringAttribute{Computed: true, Description: "Supportneed Businesstype"},
-					"supportneed_monthlyspend": schema.StringAttribute{Computed: true, Description: "Supportneed Monthlyspend"},
-					"supportneed_employeesize": schema.StringAttribute{Computed: true, Description: "Supportneed Employeesize"},
-					"support_fields_required":  schema.StringAttribute{Computed: true, Description: "Support Fields Required"},
-					"twofa_settings":           schema.StringAttribute{Computed: true, Description: "Twofa Settings"},
-					"currencyprefix":           schema.StringAttribute{Computed: true, Description: "Currencyprefix"},
-					"currencyrate":             schema.StringAttribute{Computed: true, Description: "Currencyrate"},
-					"currency":                 schema.StringAttribute{Computed: true, Description: "Currency"},
-					"credit":                   schema.Float64Attribute{Computed: true, Description: "Credit"},
-					"availablecredit":          schema.Float64Attribute{Computed: true, Description: "Availablecredit"},
-					"freecredit":               schema.Float64Attribute{Computed: true, Description: "Freecredit"},
-					"currentusages":            schema.Float64Attribute{Computed: true, Description: "Currentusages"},
-					"kyc":                      schema.StringAttribute{Computed: true, Description: "Kyc"},
-					"sms_verified":             schema.StringAttribute{Computed: true, Description: "Sms Verified"},
-					"verify":                   schema.StringAttribute{Computed: true, Description: "Verify"},
-					"is_partner":               schema.StringAttribute{Computed: true, Description: "Is Partner"},
-					"partnerid":                schema.StringAttribute{Computed: true, Description: "Partnerid"},
-					"twofa":                    schema.StringAttribute{Computed: true, Description: "Twofa"},
-					"email_verified":           schema.StringAttribute{Computed: true, Description: "Email Verified"},
-					"cloudlimit":               schema.StringAttribute{Computed: true, Description: "Cloudlimit"},
-					"k8s_limit":                schema.StringAttribute{Computed: true, Description: "k8s Limit"},
-					"is_reseller":              schema.StringAttribute{Computed: true, Description: "Is Reseller"},
-					"singleinvoice":            schema.StringAttribute{Computed: true, Description: "Singleinvoice"},
-					"razorpay_customerid":      schema.StringAttribute{Computed: true, Description: "Razorpay Customerid"},
-					"razorpay_orderid":         schema.StringAttribute{Computed: true, Description: "Razorpay Orderid"},
-					"stripe_customer":          schema.StringAttribute{Computed: true, Description: "Stripe Customer"},
-					"total_cloudservers":       schema.StringAttribute{Computed: true, Description: "Total Cloudservers"},
+					"id":                        schema.StringAttribute{Computed: true, Description: "Id"},
+					"type":                      schema.StringAttribute{Computed: true, Description: "Type"},
+					"fullname":                  schema.StringAttribute{Computed: true, Description: "Full name"},
+					"company":                   schema.StringAttribute{Computed: true, Description: "Company"},
+					"email":                     schema.StringAttribute{Computed: true, Description: "Email"},
+					"address":                   schema.StringAttribute{Computed: true, Description: "Address"},
+					"city":                      schema.StringAttribute{Computed: true, Description: "City"},
+					"state":                     schema.StringAttribute{Computed: true, Description: "State"},
+					"country":                   schema.StringAttribute{Computed: true, Description: "Country"},
+					"postcode":                  schema.StringAttribute{Computed: true, Description: "Post code"},
+					"mobile":                    schema.StringAttribute{Computed: true, Description: "Mobile"},
+					"mobilecc":                  schema.StringAttribute{Computed: true, Description: "Mobile cc"},
+					"gst_number":                schema.StringAttribute{Computed: true, Description: "Gst number"},
+					"supportneed_title":         schema.StringAttribute{Computed: true, Description: "Supportneed Title"},
+					"supportneed_usecase":       schema.StringAttribute{Computed: true, Description: "Supportneed Usecase"},
+					"supportneed_business_type": schema.StringAttribute{Computed: true, Description: "Supportneed Business type"},
+					"supportneed_monthly_spend": schema.StringAttribute{Computed: true, Description: "Supportneed Monthly spend"},
+					"supportneed_employee_size": schema.StringAttribute{Computed: true, Description: "Supportneed Employee size"},
+					"support_fields_required":   schema.StringAttribute{Computed: true, Description: "Support Fields Required"},
+					"twofa_settings":            schema.StringAttribute{Computed: true, Description: "Twofa Settings"},
+					"currencyprefix":            schema.StringAttribute{Computed: true, Description: "Currency prefix"},
+					"currencyrate":              schema.StringAttribute{Computed: true, Description: "Currency rate"},
+					"currency":                  schema.StringAttribute{Computed: true, Description: "Currency"},
+					"credit":                    schema.Float64Attribute{Computed: true, Description: "Credit"},
+					"availablecredit":           schema.Float64Attribute{Computed: true, Description: "Available credit"},
+					"freecredit":                schema.Float64Attribute{Computed: true, Description: "Freecredit"},
+					"currentusages":             schema.Float64Attribute{Computed: true, Description: "Current usages"},
+					"kyc":                       schema.StringAttribute{Computed: true, Description: "Kyc"},
+					"sms_verified":              schema.StringAttribute{Computed: true, Description: "Sms Verified"},
+					"verify":                    schema.StringAttribute{Computed: true, Description: "Verify"},
+					"is_partner":                schema.StringAttribute{Computed: true, Description: "Is Partner"},
+					"partnerid":                 schema.StringAttribute{Computed: true, Description: "Partnerid"},
+					"twofa":                     schema.StringAttribute{Computed: true, Description: "Twofa"},
+					"email_verified":            schema.StringAttribute{Computed: true, Description: "Email Verified"},
+					"cloudlimit":                schema.StringAttribute{Computed: true, Description: "Cloudlimit"},
+					"k8s_limit":                 schema.StringAttribute{Computed: true, Description: "k8s Limit"},
+					"is_reseller":               schema.StringAttribute{Computed: true, Description: "Is Reseller"},
+					"singleinvoice":             schema.StringAttribute{Computed: true, Description: "Singleinvoice"},
+					"razorpay_customerid":       schema.StringAttribute{Computed: true, Description: "Razorpay Customer id"},
+					"razorpay_orderid":          schema.StringAttribute{Computed: true, Description: "Razorpay Order id"},
+					"stripe_customer":           schema.StringAttribute{Computed: true, Description: "Stripe Customer"},
+					"total_cloudservers":        schema.StringAttribute{Computed: true, Description: "Total Cloud servers"},
 					"resources": schema.ListNestedAttribute{
 						Computed: true,
 						NestedObject: schema.NestedAttributeObject{
