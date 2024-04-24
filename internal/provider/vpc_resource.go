@@ -247,7 +247,6 @@ func (s *VpcResource) Delete(ctx context.Context, req resource.DeleteRequest, re
 		"Error deleteing utho vpc",
 		"Could not delete utho vpc ",
 	)
-	return
 	// tflog.Debug(ctx, "delete vpc")
 	// // Get current state
 	// var state VpcResourceModel
