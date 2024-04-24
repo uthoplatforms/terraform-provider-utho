@@ -80,7 +80,7 @@ func (c *Client) GetAccount(ctx context.Context) (Account, error) {
 	}
 	if resp.StatusCode != http.StatusOK {
 		body, _ := io.ReadAll(resp.Body)
-		return Account{}, errors.New("unexpected http error code received for geting Profile data status code :" + strconv.Itoa(resp.StatusCode) + " body" + string(body))
+		return Account{}, errors.New("unexpected http error code received for geting account data status code :" + strconv.Itoa(resp.StatusCode) + " body" + string(body))
 	}
 	defer resp.Body.Close()
 
