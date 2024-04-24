@@ -120,6 +120,8 @@ func (p *uthoProvider) Configure(ctx context.Context, req provider.ConfigureRequ
 func (p *uthoProvider) DataSources(_ context.Context) []func() datasource.DataSource {
 	return []func() datasource.DataSource{
 		NewAccountDataSource,
+		NewImagesDataSource,
+		NewObjectStoragePlanDataSource,
 	}
 }
 
