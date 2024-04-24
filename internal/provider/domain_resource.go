@@ -34,7 +34,8 @@ type (
 
 	// DomainResource is the model implementation.
 	DomainResourceModel struct {
-		Domain types.String `tfsdk:"domain"`
+		Domain  types.String `tfsdk:"domain"`
+		Nspoint types.String `tfsdk:"nspoint"`
 	}
 )
 
@@ -73,6 +74,7 @@ func (s *DomainResource) Schema(_ context.Context, _ resource.SchemaRequest, res
 				},
 				Description: "Must be unique",
 			},
+			"nspoint": schema.StringAttribute{Computed: true, Description: "nspoint"},
 		},
 	}
 }
@@ -109,7 +111,8 @@ func (s *DomainResource) Create(ctx context.Context, req resource.CreateRequest,
 
 	// Map response body to schema and populate Computed attribute values
 	plan = DomainResourceModel{
-		Domain: types.StringValue(domain.Domain),
+		Domain:  types.StringValue(domain.Domain),
+		Nspoint: types.StringValue(domain.Nspoint),
 	}
 
 	// Set state to fully populated data
@@ -146,7 +149,8 @@ func (s *DomainResource) Read(ctx context.Context, req resource.ReadRequest, res
 
 	// Overwrite items with refreshed state
 	state = DomainResourceModel{
-		Domain: types.StringValue(domain.Domain),
+		Domain:  types.StringValue(domain.Domain),
+		Nspoint: types.StringValue(domain.Nspoint),
 	}
 
 	// Set refreshed state
