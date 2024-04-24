@@ -127,5 +127,6 @@ func (p *uthoProvider) DataSources(_ context.Context) []func() datasource.DataSo
 func (p *uthoProvider) Resources(_ context.Context) []func() resource.Resource {
 	return []func() resource.Resource{
 		NewDomainResource,
+		NewVpcResource,
 	}
 }
