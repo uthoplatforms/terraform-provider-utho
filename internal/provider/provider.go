@@ -132,5 +132,6 @@ func (p *uthoProvider) Resources(_ context.Context) []func() resource.Resource {
 		NewVpcResource,
 		NewFirewallResource,
 		NewDnsRecordResource,
+		NewLoadbalancerResource,
 	}
 }
