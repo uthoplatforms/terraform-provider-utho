@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
@@ -77,14 +78,34 @@ type CloudServerResourceModel struct {
 	Bandwidth         types.String  `tfsdk:"bandwidth"`
 	BandwidthUsed     types.Int64   `tfsdk:"bandwidth_used"`
 	BandwidthFree     types.Int64   `tfsdk:"bandwidth_free"`
+	GpuAvailable      types.String  `tfsdk:"gpu_available"`
 	/////////////////////////
-	Features FeaturesResourceModel `tfsdk:"features"`
-	// Dclocation   DclocationResourceModel  `tfsdk:"dclocation"`
-	// Networks     NetworksResourceModel    `tfsdk:"networks"`
-	// Storages     []StoragesResourceModel  `tfsdk:"storages"`
-	// Snapshots    []SnapshotsResourceModel `tfsdk:"snapshots"`
-	// Firewalls    []FirewallsResourceModel `tfsdk:"firewalls"`
-	GpuAvailable types.String `tfsdk:"gpu_available"`
+	Features       types.Object `tfsdk:"features"`
+	Dclocation     types.Object `tfsdk:"dclocation"`
+	PublicNetwork  types.List   `tfsdk:"public_network"`
+	PrivateNetwork types.List   `tfsdk:"private_network"`
+	Storages       types.List   `tfsdk:"storages"`
+	Snapshots      types.List   `tfsdk:"snapshots"`
+	Firewalls      types.List   `tfsdk:"firewalls"`
+}
+type PublicNetworkResourceModel struct {
+	IPAddress types.String `tfsdk:"ip_address"`
+	Netmask   types.String `tfsdk:"netmask"`
+	Gateway   types.String `tfsdk:"gateway"`
+	Type      types.String `tfsdk:"type"`
+	Nat       types.Bool   `tfsdk:"nat"`
+	Primary   types.String `tfsdk:"primary"`
+}
+type PrivateNetworkResourceModel struct {
+	Noip      types.Int64  `tfsdk:"noip"`
+	IPAddress types.String `tfsdk:"ip_address"`
+	VpcName   types.String `tfsdk:"vpc_name"`
+	Network   types.String `tfsdk:"network"`
+	VpcID     types.String `tfsdk:"vpc_id"`
+	Netmask   types.String `tfsdk:"netmask"`
+	Gateway   types.String `tfsdk:"gateway"`
+	Type      types.String `tfsdk:"type"`
+	Primary   types.String `tfsdk:"primary"`
 }
 type FeaturesResourceModel struct {
 	Backups types.String `tfsdk:"backups"`
@@ -94,28 +115,6 @@ type DclocationResourceModel struct {
 	Country  types.String `tfsdk:"country"`
 	Dc       types.String `tfsdk:"dc"`
 	Dccc     types.String `tfsdk:"dccc"`
-}
-type NetworksResourceModel struct {
-	Public  PublicResourceModel  `tfsdk:"public"`
-	Private PrivateResourceModel `tfsdk:"private"`
-}
-type PublicResourceModel struct {
-	V4 []V4ResourceModel `tfsdk:"v4"`
-}
-type V4ResourceModel struct {
-	IPAddress types.String `tfsdk:"ip_address"`
-	Netmask   types.String `tfsdk:"netmask"`
-	Gateway   types.String `tfsdk:"gateway"`
-	Type      types.String `tfsdk:"type"`
-	Nat       types.Bool   `tfsdk:"nat"`
-	Primary   types.String `tfsdk:"primary"`
-	Rdns      types.String `tfsdk:"rdns"`
-}
-type PrivateResourceModel struct {
-	V4 []PrivateV4ResourceModel `tfsdk:"v4"`
-}
-type PrivateV4ResourceModel struct {
-	Noip types.Int64 `tfsdk:"noip"`
 }
 type StoragesResourceModel struct {
 	ID        types.String `tfsdk:"id"`
@@ -166,18 +165,18 @@ func (d *CloudServerResource) Configure(_ context.Context, req resource.Configur
 // Schema defines the schema for the resource.
 func (s *CloudServerResource) Schema(_ context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{Attributes: map[string]schema.Attribute{
-		"name":          schema.StringAttribute{Required: true, Description: "", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
-		"dcslug":        schema.StringAttribute{Required: true, Description: "", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
-		"image":         schema.StringAttribute{Required: true, Description: "", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
-		"planid":        schema.StringAttribute{Optional: true, Description: "", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
-		"root_password": schema.StringAttribute{Optional: true, Description: "", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
-		"firewall":      schema.StringAttribute{Optional: true, Description: "", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
-		"enablebackup":  schema.BoolAttribute{Optional: true, Description: "", PlanModifiers: []planmodifier.Bool{boolplanmodifier.RequiresReplace()}},
-		"billingcycle":  schema.StringAttribute{Optional: true, Description: "", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
-		"backupid":      schema.StringAttribute{Optional: true, Description: "", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
-		"snapshotid":    schema.StringAttribute{Optional: true, Description: "", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
-		"sshkeys":       schema.StringAttribute{Optional: true, Description: ""},
-		///////////////////////////////////////////
+		"name":         schema.StringAttribute{Required: true, Description: "", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
+		"dcslug":       schema.StringAttribute{Required: true, Description: "", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
+		"image":        schema.StringAttribute{Required: true, Description: "", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
+		"planid":       schema.StringAttribute{Optional: true, Description: "", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
+		"firewall":     schema.StringAttribute{Optional: true, Description: "", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
+		"enablebackup": schema.BoolAttribute{Optional: true, Description: "", PlanModifiers: []planmodifier.Bool{boolplanmodifier.RequiresReplace()}},
+		"billingcycle": schema.StringAttribute{Optional: true, Description: "", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
+		"backupid":     schema.StringAttribute{Optional: true, Description: "", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
+		"snapshotid":   schema.StringAttribute{Optional: true, Description: "", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
+		"sshkeys":      schema.StringAttribute{Optional: true, Description: "", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
+
+		"root_password":     schema.StringAttribute{Computed: true, Description: ""},
 		"cloudid":           schema.StringAttribute{Computed: true, Description: "Cloudid"},
 		"ip":                schema.StringAttribute{Computed: true, Description: "Ip"},
 		"cpu":               schema.StringAttribute{Computed: true, Description: "Cpu"},
@@ -217,7 +216,88 @@ func (s *CloudServerResource) Schema(_ context.Context, _ resource.SchemaRequest
 			Attributes: map[string]schema.Attribute{
 				"backups": schema.StringAttribute{
 					Computed:    true,
-					Description: "cpu cores",
+					Description: "backups",
+				},
+			},
+		},
+		"dclocation": schema.SingleNestedAttribute{
+			Computed:    true,
+			Description: "dclocation",
+			Attributes: map[string]schema.Attribute{
+				"location": schema.StringAttribute{Computed: true, Description: ""},
+				"country":  schema.StringAttribute{Computed: true, Description: ""},
+				"dc":       schema.StringAttribute{Computed: true, Description: ""},
+				"dccc":     schema.StringAttribute{Computed: true, Description: ""},
+			},
+		},
+		"public_network": schema.ListNestedAttribute{
+			Computed:    true,
+			Description: "",
+			NestedObject: schema.NestedAttributeObject{
+				Attributes: map[string]schema.Attribute{
+					"ip_address": schema.StringAttribute{Computed: true, Description: ""},
+					"netmask":    schema.StringAttribute{Computed: true, Description: ""},
+					"gateway":    schema.StringAttribute{Computed: true, Description: ""},
+					"type":       schema.StringAttribute{Computed: true, Description: ""},
+					"nat":        schema.BoolAttribute{Computed: true, Description: ""},
+					"primary":    schema.StringAttribute{Computed: true, Description: ""},
+				},
+			},
+		},
+		"private_network": schema.ListNestedAttribute{
+			Computed:    true,
+			Description: "",
+			NestedObject: schema.NestedAttributeObject{
+				Attributes: map[string]schema.Attribute{
+					"noip":       schema.Int64Attribute{Computed: true, Description: ""},
+					"ip_address": schema.StringAttribute{Computed: true},
+					"vpc_name":   schema.StringAttribute{Computed: true},
+					"network":    schema.StringAttribute{Computed: true},
+					"vpc_id":     schema.StringAttribute{Computed: true},
+					"netmask":    schema.StringAttribute{Computed: true},
+					"gateway":    schema.StringAttribute{Computed: true},
+					"type":       schema.StringAttribute{Computed: true},
+					"primary":    schema.StringAttribute{Computed: true},
+				},
+			},
+		},
+		"storages": schema.ListNestedAttribute{
+			Computed:    true,
+			Description: "",
+			NestedObject: schema.NestedAttributeObject{
+				Attributes: map[string]schema.Attribute{
+					"id":         schema.StringAttribute{Computed: true, Description: ""},
+					"size":       schema.Int64Attribute{Computed: true, Description: ""},
+					"disk_used":  schema.StringAttribute{Computed: true, Description: ""},
+					"disk_free":  schema.StringAttribute{Computed: true, Description: ""},
+					"disk_usedp": schema.StringAttribute{Computed: true, Description: ""},
+					"created_at": schema.StringAttribute{Computed: true, Description: ""},
+					"bus":        schema.StringAttribute{Computed: true, Description: ""},
+					"type":       schema.StringAttribute{Computed: true, Description: ""},
+				},
+			},
+		},
+		"snapshots": schema.ListNestedAttribute{
+			Computed:    true,
+			Description: "",
+			NestedObject: schema.NestedAttributeObject{
+				Attributes: map[string]schema.Attribute{
+					"id":         schema.StringAttribute{Computed: true},
+					"size":       schema.StringAttribute{Computed: true},
+					"created_at": schema.StringAttribute{Computed: true},
+					"note":       schema.StringAttribute{Computed: true},
+					"name":       schema.StringAttribute{Computed: true},
+				},
+			},
+		},
+		"firewalls": schema.ListNestedAttribute{
+			Computed:    true,
+			Description: "",
+			NestedObject: schema.NestedAttributeObject{
+				Attributes: map[string]schema.Attribute{
+					"id":         schema.StringAttribute{Computed: true},
+					"name":       schema.StringAttribute{Computed: true},
+					"created_at": schema.StringAttribute{Computed: true},
 				},
 			},
 		},
@@ -265,7 +345,7 @@ func (s *CloudServerResource) Create(ctx context.Context, req resource.CreateReq
 
 	tflog.Debug(ctx, "send create cloud server request")
 
-	cloudServer, getCloudServer, err := s.client.CreateCloudServer(ctx, firewallRequest)
+	cloudServer, err := s.client.CreateCloudServer(ctx, firewallRequest)
 
 	if err != nil {
 		resp.Diagnostics.AddError(
@@ -275,14 +355,14 @@ func (s *CloudServerResource) Create(ctx context.Context, req resource.CreateReq
 		return
 	}
 
-	// getCloudServer, err := s.client.GetCloudServer(ctx, plan.Cloudid.ValueString())
-	// if err != nil {
-	// 	resp.Diagnostics.AddError(
-	// 		"Error Reading utho cloud server",
-	// 		"Could not read utho cloud server "+plan.Cloudid.ValueString()+": "+err.Error(),
-	// 	)
-	// 	return
-	// }
+	getCloudServer, err := s.client.GetCloudServer(ctx, plan.Cloudid.ValueString())
+	if err != nil {
+		resp.Diagnostics.AddError(
+			"Error Reading utho cloud server",
+			"Could not read utho cloud server "+plan.Cloudid.ValueString()+": "+err.Error(),
+		)
+		return
+	}
 
 	// map response value to more readable value
 	enableBackupMap := map[string]bool{
@@ -327,14 +407,186 @@ func (s *CloudServerResource) Create(ctx context.Context, req resource.CreateReq
 	plan.Enablebackup = types.BoolValue(enableBackupMap[getCloudServer.Features.Backups])
 	plan.GpuAvailable = types.StringValue(getCloudServer.GpuAvailable)
 
-	plan.Features.Backups = types.StringValue("0")
-
-	// Set state to fully populated data
+	// set state for primary types
 	diags = resp.State.Set(ctx, plan)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
+
+	// set state fro compex types
+	featuresResourceModel := FeaturesResourceModel{Backups: types.StringValue(getCloudServer.Features.Backups)}
+	diags = resp.State.SetAttribute(ctx, path.Root("features"), featuresResourceModel)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	// dclocatio
+	dclocationResourceModel := DclocationResourceModel{
+		Location: types.StringValue(getCloudServer.Dclocation.Location),
+		Country:  types.StringValue(getCloudServer.Dclocation.Country),
+		Dc:       types.StringValue(getCloudServer.Dclocation.Dc),
+		Dccc:     types.StringValue(getCloudServer.Dclocation.Dccc),
+	}
+	diags = resp.State.SetAttribute(ctx, path.Root("dclocation"), dclocationResourceModel)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	var privateNetworkObjType = types.ObjectType{AttrTypes: map[string]attr.Type{
+		"noip":       types.Int64Type,
+		"ip_address": types.StringType,
+		"vpc_name":   types.StringType,
+		"network":    types.StringType,
+		"vpc_id":     types.StringType,
+		"netmask":    types.StringType,
+		"gateway":    types.StringType,
+		"type":       types.StringType,
+		"primary":    types.StringType,
+	}}
+	privateNetworkModel := make([]PrivateNetworkResourceModel, len(getCloudServer.Networks.Private.V4))
+	for i, v := range getCloudServer.Networks.Private.V4 {
+		privateNetworkModel[i] = PrivateNetworkResourceModel{
+			Noip:      types.Int64Value(int64(v.Noip)),
+			IPAddress: types.StringValue(v.IPAddress),
+			VpcName:   types.StringValue(v.VpcName),
+			Network:   types.StringValue(v.Network),
+			VpcID:     types.StringValue(v.VpcID),
+			Netmask:   types.StringValue(v.Netmask),
+			Gateway:   types.StringValue(v.Gateway),
+			Type:      types.StringValue(v.Type),
+			Primary:   types.StringValue(v.Primary),
+		}
+	}
+	privateNetworkList, diags := types.ListValueFrom(ctx, privateNetworkObjType, privateNetworkModel)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+	diags = resp.State.SetAttribute(ctx, path.Root("private_network"), privateNetworkList)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	var publicNetworkObjType = types.ObjectType{AttrTypes: map[string]attr.Type{
+		"ip_address": types.StringType,
+		"netmask":    types.StringType,
+		"gateway":    types.StringType,
+		"type":       types.StringType,
+		"nat":        types.BoolType,
+		"primary":    types.StringType,
+	}}
+	PublicNetworkModel := make([]PublicNetworkResourceModel, len(getCloudServer.Networks.Public.V4))
+	for i, v := range getCloudServer.Networks.Public.V4 {
+		PublicNetworkModel[i] = PublicNetworkResourceModel{
+			IPAddress: types.StringValue(v.IPAddress),
+			Netmask:   types.StringValue(v.Netmask),
+			Gateway:   types.StringValue(v.Gateway),
+			Type:      types.StringValue(v.Type),
+			Nat:       types.BoolValue(v.Nat),
+			Primary:   types.StringValue(v.Primary),
+		}
+	}
+	publicNetworkList, diags := types.ListValueFrom(ctx, publicNetworkObjType, PublicNetworkModel)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+	diags = resp.State.SetAttribute(ctx, path.Root("public_network"), publicNetworkList)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	var storageObjType = types.ObjectType{AttrTypes: map[string]attr.Type{
+		"id":         types.StringType,
+		"size":       types.Int64Type,
+		"disk_used":  types.StringType,
+		"disk_free":  types.StringType,
+		"disk_usedp": types.StringType,
+		"created_at": types.StringType,
+		"bus":        types.StringType,
+		"type":       types.StringType,
+	}}
+	storageModel := make([]StoragesResourceModel, len(getCloudServer.Storages))
+	for i, v := range getCloudServer.Storages {
+		storageModel[i] = StoragesResourceModel{
+			ID:        types.StringValue(v.ID),
+			Size:      types.Int64Value(int64(v.Size)),
+			DiskUsed:  types.StringValue(v.DiskUsed),
+			DiskFree:  types.StringValue(v.DiskFree),
+			DiskUsedp: types.StringValue(v.DiskUsedp),
+			CreatedAt: types.StringValue(v.CreatedAt),
+			Bus:       types.StringValue(v.Bus),
+			Type:      types.StringValue(v.Type),
+		}
+	}
+	storageList, diags := types.ListValueFrom(ctx, storageObjType, storageModel)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+	diags = resp.State.SetAttribute(ctx, path.Root("storages"), storageList)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	var snapshotObjType = types.ObjectType{AttrTypes: map[string]attr.Type{
+		"id":         types.StringType,
+		"size":       types.StringType,
+		"created_at": types.StringType,
+		"note":       types.StringType,
+		"name":       types.StringType,
+	}}
+	snapshotModel := make([]SnapshotsResourceModel, len(getCloudServer.Snapshots))
+	for i, v := range getCloudServer.Snapshots {
+		snapshotModel[i] = SnapshotsResourceModel{
+			ID:        types.StringValue(v.ID),
+			Size:      types.StringValue(v.Size),
+			CreatedAt: types.StringValue(v.CreatedAt),
+			Note:      types.StringValue(v.Note),
+			Name:      types.StringValue(v.Name),
+		}
+	}
+	snapshotList, diags := types.ListValueFrom(ctx, snapshotObjType, snapshotModel)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+	diags = resp.State.SetAttribute(ctx, path.Root("snapshots"), snapshotList)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	var firewallObjType = types.ObjectType{AttrTypes: map[string]attr.Type{
+		"id":         types.StringType,
+		"created_at": types.StringType,
+		"name":       types.StringType,
+	}}
+	firewallModel := make([]FirewallsResourceModel, len(getCloudServer.Firewalls))
+	for i, v := range getCloudServer.Firewalls {
+		firewallModel[i] = FirewallsResourceModel{
+			ID:        types.StringValue(v.ID),
+			CreatedAt: types.StringValue(v.CreatedAt),
+			Name:      types.StringValue(v.Name),
+		}
+	}
+	firewallList, diags := types.ListValueFrom(ctx, firewallObjType, firewallModel)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+	diags = resp.State.SetAttribute(ctx, path.Root("firewalls"), firewallList)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
 	tflog.Debug(ctx, "finish create cloud server")
 }
 
@@ -368,46 +620,45 @@ func (s *CloudServerResource) Read(ctx context.Context, req resource.ReadRequest
 	}
 
 	// Overwrite items with refreshed state
-	state = CloudServerResourceModel{
-		Name:              types.StringValue(cloudServer.Hostname),
-		Dcslug:            types.StringValue(cloudServer.Dclocation.Dc),
-		Image:             types.StringValue(cloudServer.Image.Image),
-		Firewall:          types.StringValue(cloudServer.Firewalls[0].ID),
-		Enablebackup:      types.BoolValue(enableBackupMap[cloudServer.Features.Backups]),
-		Billingcycle:      types.StringValue(cloudServer.Billingcycle),
-		Cloudid:           types.StringValue(cloudServer.Cloudid),
-		IP:                types.StringValue(cloudServer.IP),
-		CPU:               types.StringValue(cloudServer.CPU),
-		RAM:               types.StringValue(cloudServer.RAM),
-		ManagedOs:         types.StringValue(cloudServer.ManagedOs),
-		ManagedFull:       types.StringValue(cloudServer.ManagedFull),
-		ManagedOnetime:    types.StringValue(cloudServer.ManagedOnetime),
-		PlanDisksize:      types.Int64Value(int64(cloudServer.PlanDisksize)),
-		Disksize:          types.Int64Value(int64(cloudServer.Disksize)),
-		Ha:                types.StringValue(cloudServer.Ha),
-		Status:            types.StringValue(cloudServer.Status),
-		Iso:               types.StringValue(cloudServer.Iso),
-		Cost:              types.Float64Value(cloudServer.Cost),
-		Vmcost:            types.Float64Value(cloudServer.Vmcost),
-		Imagecost:         types.Int64Value(int64(cloudServer.Imagecost)),
-		Backupcost:        types.Int64Value(int64(cloudServer.Backupcost)),
-		Hourlycost:        types.Float64Value(cloudServer.Hourlycost),
-		Cloudhourlycost:   types.Float64Value(cloudServer.Cloudhourlycost),
-		Imagehourlycost:   types.Int64Value(int64(cloudServer.Imagehourlycost)),
-		Backuphourlycost:  types.Int64Value(int64(cloudServer.Backuphourlycost)),
-		Creditrequired:    types.Float64Value(cloudServer.Creditrequired),
-		Creditreserved:    types.Int64Value(int64(cloudServer.Creditreserved)),
-		Nextinvoiceamount: types.Float64Value(cloudServer.Nextinvoiceamount),
-		Nextinvoicehours:  types.StringValue(cloudServer.Nextinvoicehours),
-		Consolepassword:   types.StringValue(cloudServer.Consolepassword),
-		Powerstatus:       types.StringValue(cloudServer.Powerstatus),
-		CreatedAt:         types.StringValue(cloudServer.CreatedAt),
-		UpdatedAt:         types.StringValue(cloudServer.UpdatedAt),
-		Nextduedate:       types.StringValue(cloudServer.Nextduedate),
-		Bandwidth:         types.StringValue(cloudServer.Bandwidth),
-		BandwidthUsed:     types.Int64Value(int64(cloudServer.BandwidthUsed)),
-		BandwidthFree:     types.Int64Value(int64(cloudServer.BandwidthFree)),
-	}
+	state.Name = types.StringValue(cloudServer.Hostname)
+	state.Dcslug = types.StringValue(cloudServer.Dclocation.Dc)
+	state.Image = types.StringValue(cloudServer.Image.Image)
+	state.Firewall = types.StringValue(cloudServer.Firewalls[0].ID)
+	state.Enablebackup = types.BoolValue(enableBackupMap[cloudServer.Features.Backups])
+	state.Billingcycle = types.StringValue(cloudServer.Billingcycle)
+	state.Cloudid = types.StringValue(cloudServer.Cloudid)
+	state.IP = types.StringValue(cloudServer.IP)
+	state.CPU = types.StringValue(cloudServer.CPU)
+	state.RAM = types.StringValue(cloudServer.RAM)
+	state.ManagedOs = types.StringValue(cloudServer.ManagedOs)
+	state.ManagedFull = types.StringValue(cloudServer.ManagedFull)
+	state.ManagedOnetime = types.StringValue(cloudServer.ManagedOnetime)
+	state.PlanDisksize = types.Int64Value(int64(cloudServer.PlanDisksize))
+	state.Disksize = types.Int64Value(int64(cloudServer.Disksize))
+	state.Ha = types.StringValue(cloudServer.Ha)
+	state.Status = types.StringValue(cloudServer.Status)
+	state.Iso = types.StringValue(cloudServer.Iso)
+	state.Cost = types.Float64Value(cloudServer.Cost)
+	state.Vmcost = types.Float64Value(cloudServer.Vmcost)
+	state.Imagecost = types.Int64Value(int64(cloudServer.Imagecost))
+	state.Backupcost = types.Int64Value(int64(cloudServer.Backupcost))
+	state.Hourlycost = types.Float64Value(cloudServer.Hourlycost)
+	state.Cloudhourlycost = types.Float64Value(cloudServer.Cloudhourlycost)
+	state.Imagehourlycost = types.Int64Value(int64(cloudServer.Imagehourlycost))
+	state.Backuphourlycost = types.Int64Value(int64(cloudServer.Backuphourlycost))
+	state.Creditrequired = types.Float64Value(cloudServer.Creditrequired)
+	state.Creditreserved = types.Int64Value(int64(cloudServer.Creditreserved))
+	state.Nextinvoiceamount = types.Float64Value(cloudServer.Nextinvoiceamount)
+	state.Nextinvoicehours = types.StringValue(cloudServer.Nextinvoicehours)
+	state.Consolepassword = types.StringValue(cloudServer.Consolepassword)
+	state.Powerstatus = types.StringValue(cloudServer.Powerstatus)
+	state.CreatedAt = types.StringValue(cloudServer.CreatedAt)
+	state.UpdatedAt = types.StringValue(cloudServer.UpdatedAt)
+	state.Nextduedate = types.StringValue(cloudServer.Nextduedate)
+	state.Bandwidth = types.StringValue(cloudServer.Bandwidth)
+	state.BandwidthUsed = types.Int64Value(int64(cloudServer.BandwidthUsed))
+	state.BandwidthFree = types.Int64Value(int64(cloudServer.BandwidthFree))
+	state.GpuAvailable = types.StringValue(cloudServer.GpuAvailable)
 
 	if !state.Snapshotid.IsNull() {
 		state.Snapshotid = types.StringValue(state.Snapshotid.ValueString())
@@ -430,80 +681,9 @@ func (s *CloudServerResource) Read(ctx context.Context, req resource.ReadRequest
 	if !state.Backupid.IsNull() {
 		state.Backupid = types.StringValue(state.Backupid.ValueString())
 	}
-	if !state.Snapshotid.IsNull() {
-		state.Snapshotid = types.StringValue(state.Snapshotid.ValueString())
-	}
 	if !state.Sshkeys.IsNull() {
 		state.Sshkeys = types.StringValue(state.Sshkeys.ValueString())
 	}
-
-	state.GpuAvailable = types.StringValue(cloudServer.GpuAvailable)
-	state.Features = FeaturesResourceModel{Backups: types.StringValue(cloudServer.Features.Backups)}
-	// state.Dclocation = DclocationResourceModel{
-	// 	Location: types.StringValue(cloudServer.Dclocation.Location),
-	// 	Country:  types.StringValue(cloudServer.Dclocation.Country),
-	// 	Dc:       types.StringValue(cloudServer.Dclocation.Dc),
-	// 	Dccc:     types.StringValue(cloudServer.Dclocation.Dccc),
-	// }
-
-	// publicResourceModel := PublicResourceModel{}
-	// for _, v4 := range cloudServer.Networks.Public.V4 {
-	// 	publicV4 := V4ResourceModel{
-	// 		IPAddress: types.StringValue(v4.IPAddress),
-	// 		Netmask:   types.StringValue(v4.Netmask),
-	// 		Gateway:   types.StringValue(v4.Gateway),
-	// 		Type:      types.StringValue(v4.Type),
-	// 		Nat:       types.BoolValue(v4.Nat),
-	// 		Primary:   types.StringValue(v4.Primary),
-	// 		Rdns:      types.StringValue(v4.Rdns),
-	// 	}
-	// 	publicResourceModel.V4 = append(publicResourceModel.V4, publicV4)
-	// }
-	// privateResourceModel := PrivateResourceModel{}
-	// for _, v4 := range cloudServer.Networks.Private.V4 {
-	// 	privateV4 := PrivateV4ResourceModel{
-	// 		Noip: types.Int64Value(int64(v4.Noip)),
-	// 	}
-	// 	privateResourceModel.V4 = append(privateResourceModel.V4, privateV4)
-	// }
-	// state.Networks = NetworksResourceModel{
-	// 	Public:  publicResourceModel,
-	// 	Private: privateResourceModel,
-	// }
-
-	// for _, storage := range cloudServer.Storages {
-	// 	storageModel := StoragesResourceModel{
-	// 		ID:        types.StringValue(storage.ID),
-	// 		Size:      types.Int64Value(int64(storage.Size)),
-	// 		DiskUsed:  types.StringValue(storage.DiskUsed),
-	// 		DiskFree:  types.StringValue(storage.DiskFree),
-	// 		DiskUsedp: types.StringValue(storage.DiskUsedp),
-	// 		CreatedAt: types.StringValue(storage.CreatedAt),
-	// 		Bus:       types.StringValue(storage.Bus),
-	// 		Type:      types.StringValue(storage.Type),
-	// 	}
-	// 	state.Storages = append(state.Storages, storageModel)
-	// }
-
-	// for _, snapshot := range cloudServer.Snapshots {
-	// 	snapshotModel := SnapshotsResourceModel{
-	// 		ID:        types.StringValue(snapshot.ID),
-	// 		Size:      types.StringValue(snapshot.Size),
-	// 		CreatedAt: types.StringValue(snapshot.CreatedAt),
-	// 		Note:      types.StringValue(snapshot.Note),
-	// 		Name:      types.StringValue(snapshot.Name),
-	// 	}
-	// 	state.Snapshots = append(state.Snapshots, snapshotModel)
-	// }
-
-	// for _, firewall := range cloudServer.Firewalls {
-	// 	firewallModel := FirewallsResourceModel{
-	// 		ID:        types.StringValue(firewall.ID),
-	// 		Name:      types.StringValue(firewall.Name),
-	// 		CreatedAt: types.StringValue(firewall.CreatedAt),
-	// 	}
-	// 	state.Firewalls = append(state.Firewalls, firewallModel)
-	// }
 
 	// Set refreshed state
 	diags = resp.State.Set(ctx, &state)
@@ -511,6 +691,180 @@ func (s *CloudServerResource) Read(ctx context.Context, req resource.ReadRequest
 	if resp.Diagnostics.HasError() {
 		return
 	}
+
+	// set state fro compex types
+	featuresResourceModel := FeaturesResourceModel{Backups: types.StringValue(cloudServer.Features.Backups)}
+	diags = resp.State.SetAttribute(ctx, path.Root("features"), featuresResourceModel)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	// dclocatio
+	dclocationResourceModel := DclocationResourceModel{
+		Location: types.StringValue(cloudServer.Dclocation.Location),
+		Country:  types.StringValue(cloudServer.Dclocation.Country),
+		Dc:       types.StringValue(cloudServer.Dclocation.Dc),
+		Dccc:     types.StringValue(cloudServer.Dclocation.Dccc),
+	}
+	diags = resp.State.SetAttribute(ctx, path.Root("dclocation"), dclocationResourceModel)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	var privateNetworkObjType = types.ObjectType{AttrTypes: map[string]attr.Type{
+		"noip":       types.Int64Type,
+		"ip_address": types.StringType,
+		"vpc_name":   types.StringType,
+		"network":    types.StringType,
+		"vpc_id":     types.StringType,
+		"netmask":    types.StringType,
+		"gateway":    types.StringType,
+		"type":       types.StringType,
+		"primary":    types.StringType,
+	}}
+	privateNetworkModel := make([]PrivateNetworkResourceModel, len(cloudServer.Networks.Private.V4))
+	for i, v := range cloudServer.Networks.Private.V4 {
+		privateNetworkModel[i] = PrivateNetworkResourceModel{
+			Noip:      types.Int64Value(int64(v.Noip)),
+			IPAddress: types.StringValue(v.IPAddress),
+			VpcName:   types.StringValue(v.VpcName),
+			Network:   types.StringValue(v.Network),
+			VpcID:     types.StringValue(v.VpcID),
+			Netmask:   types.StringValue(v.Netmask),
+			Gateway:   types.StringValue(v.Gateway),
+			Type:      types.StringValue(v.Type),
+			Primary:   types.StringValue(v.Primary),
+		}
+	}
+	privateNetworkList, diags := types.ListValueFrom(ctx, privateNetworkObjType, privateNetworkModel)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+	diags = resp.State.SetAttribute(ctx, path.Root("private_network"), privateNetworkList)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	var publicNetworkObjType = types.ObjectType{AttrTypes: map[string]attr.Type{
+		"ip_address": types.StringType,
+		"netmask":    types.StringType,
+		"gateway":    types.StringType,
+		"type":       types.StringType,
+		"nat":        types.BoolType,
+		"primary":    types.StringType,
+	}}
+	PublicNetworkModel := make([]PublicNetworkResourceModel, len(cloudServer.Networks.Public.V4))
+	for i, v := range cloudServer.Networks.Public.V4 {
+		PublicNetworkModel[i] = PublicNetworkResourceModel{
+			IPAddress: types.StringValue(v.IPAddress),
+			Netmask:   types.StringValue(v.Netmask),
+			Gateway:   types.StringValue(v.Gateway),
+			Type:      types.StringValue(v.Type),
+			Nat:       types.BoolValue(v.Nat),
+			Primary:   types.StringValue(v.Primary),
+		}
+	}
+	publicNetworkList, diags := types.ListValueFrom(ctx, publicNetworkObjType, PublicNetworkModel)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+	diags = resp.State.SetAttribute(ctx, path.Root("public_network"), publicNetworkList)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	var storageObjType = types.ObjectType{AttrTypes: map[string]attr.Type{
+		"id":         types.StringType,
+		"size":       types.Int64Type,
+		"disk_used":  types.StringType,
+		"disk_free":  types.StringType,
+		"disk_usedp": types.StringType,
+		"created_at": types.StringType,
+		"bus":        types.StringType,
+		"type":       types.StringType,
+	}}
+	storageModel := make([]StoragesResourceModel, len(cloudServer.Storages))
+	for i, v := range cloudServer.Storages {
+		storageModel[i] = StoragesResourceModel{
+			ID:        types.StringValue(v.ID),
+			Size:      types.Int64Value(int64(v.Size)),
+			DiskUsed:  types.StringValue(v.DiskUsed),
+			DiskFree:  types.StringValue(v.DiskFree),
+			DiskUsedp: types.StringValue(v.DiskUsedp),
+			CreatedAt: types.StringValue(v.CreatedAt),
+			Bus:       types.StringValue(v.Bus),
+			Type:      types.StringValue(v.Type),
+		}
+	}
+	storageList, diags := types.ListValueFrom(ctx, storageObjType, storageModel)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+	diags = resp.State.SetAttribute(ctx, path.Root("storages"), storageList)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	var snapshotObjType = types.ObjectType{AttrTypes: map[string]attr.Type{
+		"id":         types.StringType,
+		"size":       types.StringType,
+		"created_at": types.StringType,
+		"note":       types.StringType,
+		"name":       types.StringType,
+	}}
+	snapshotModel := make([]SnapshotsResourceModel, len(cloudServer.Snapshots))
+	for i, v := range cloudServer.Snapshots {
+		snapshotModel[i] = SnapshotsResourceModel{
+			ID:        types.StringValue(v.ID),
+			Size:      types.StringValue(v.Size),
+			CreatedAt: types.StringValue(v.CreatedAt),
+			Note:      types.StringValue(v.Note),
+			Name:      types.StringValue(v.Name),
+		}
+	}
+	snapshotList, diags := types.ListValueFrom(ctx, snapshotObjType, snapshotModel)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+	diags = resp.State.SetAttribute(ctx, path.Root("snapshots"), snapshotList)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	var firewallObjType = types.ObjectType{AttrTypes: map[string]attr.Type{
+		"id":         types.StringType,
+		"created_at": types.StringType,
+		"name":       types.StringType,
+	}}
+	firewallModel := make([]FirewallsResourceModel, len(cloudServer.Firewalls))
+	for i, v := range cloudServer.Firewalls {
+		firewallModel[i] = FirewallsResourceModel{
+			ID:        types.StringValue(v.ID),
+			CreatedAt: types.StringValue(v.CreatedAt),
+			Name:      types.StringValue(v.Name),
+		}
+	}
+	firewallList, diags := types.ListValueFrom(ctx, firewallObjType, firewallModel)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+	diags = resp.State.SetAttribute(ctx, path.Root("firewalls"), firewallList)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
 	tflog.Debug(ctx, "finish get cloud server request")
 }
 
