@@ -33,10 +33,10 @@ type FirewallResponse struct {
 	Message string `json:"message"`
 }
 
-func (c *Client) CreateFirewall(ctx context.Context, serverRequest FirewallRequest) (FirewallResponse, error) {
+func (c *Client) CreateFirewall(ctx context.Context, firewallRequest FirewallRequest) (FirewallResponse, error) {
 	uri := BASE_URL + "firewall/create"
 
-	jsonPayload, err := json.Marshal(serverRequest)
+	jsonPayload, err := json.Marshal(firewallRequest)
 	if err != nil {
 		return FirewallResponse{}, err
 	}
