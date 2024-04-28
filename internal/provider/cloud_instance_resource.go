@@ -18,22 +18,22 @@ import (
 
 // implement resource interfaces.
 var (
-	_ resource.Resource                = &CloudServerResource{}
-	_ resource.ResourceWithConfigure   = &CloudServerResource{}
-	_ resource.ResourceWithImportState = &CloudServerResource{}
+	_ resource.Resource                = &CloudInstanceResource{}
+	_ resource.ResourceWithConfigure   = &CloudInstanceResource{}
+	_ resource.ResourceWithImportState = &CloudInstanceResource{}
 )
 
-// NewCloudServerResource is a helper function to simplify the provider implementation.
-func NewCloudServerResource() resource.Resource {
-	return &CloudServerResource{}
+// NewCloudInstanceResource is a helper function to simplify the provider implementation.
+func NewCloudInstanceResource() resource.Resource {
+	return &CloudInstanceResource{}
 }
 
-// CloudServerResource is the resource implementation.
-type CloudServerResource struct {
+// CloudInstanceResource is the resource implementation.
+type CloudInstanceResource struct {
 	client *api.Client
 }
 
-type CloudServerResourceModel struct {
+type CloudInstanceResourceModel struct {
 	Name         types.String `tfsdk:"name"`
 	Dcslug       types.String `tfsdk:"dcslug"`
 	Image        types.String `tfsdk:"image"`
@@ -140,12 +140,12 @@ type FirewallsResourceModel struct {
 }
 
 // Metadata returns the resource type name.
-func (s *CloudServerResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
-	resp.TypeName = req.ProviderTypeName + "_cloud_server"
+func (s *CloudInstanceResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
+	resp.TypeName = req.ProviderTypeName + "_cloud_instance"
 }
 
 // Configure adds the provider configured client to the data source.
-func (d *CloudServerResource) Configure(_ context.Context, req resource.ConfigureRequest, resp *resource.ConfigureResponse) {
+func (d *CloudInstanceResource) Configure(_ context.Context, req resource.ConfigureRequest, resp *resource.ConfigureResponse) {
 	if req.ProviderData == nil {
 		return
 	}
@@ -153,7 +153,7 @@ func (d *CloudServerResource) Configure(_ context.Context, req resource.Configur
 	client, ok := req.ProviderData.(*api.Client)
 	if !ok {
 		resp.Diagnostics.AddError(
-			"Unexpected CloudServer Data Source Configure Type",
+			"Unexpected CloudInstance Data Source Configure Type",
 			fmt.Sprintf("Expected *api.Client, got: %T. Please report this issue to the provider developers.", req.ProviderData),
 		)
 
@@ -163,7 +163,7 @@ func (d *CloudServerResource) Configure(_ context.Context, req resource.Configur
 }
 
 // Schema defines the schema for the resource.
-func (s *CloudServerResource) Schema(_ context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
+func (s *CloudInstanceResource) Schema(_ context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{Attributes: map[string]schema.Attribute{
 		"name":         schema.StringAttribute{Required: true, Description: "", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
 		"dcslug":       schema.StringAttribute{Required: true, Description: "", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
@@ -305,16 +305,16 @@ func (s *CloudServerResource) Schema(_ context.Context, _ resource.SchemaRequest
 	}
 }
 
-// Import using cloud server as the attribute
-func (s *CloudServerResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
+// Import using cloud instance as the attribute
+func (s *CloudInstanceResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
 	resource.ImportStatePassthroughID(ctx, path.Root("cloudid"), req, resp)
 }
 
 // Create a new resource.
-func (s *CloudServerResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
-	tflog.Debug(ctx, "create cloud server")
+func (s *CloudInstanceResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
+	tflog.Debug(ctx, "create cloud instance")
 	// Retrieve values from plan
-	var plan CloudServerResourceModel
+	var plan CloudInstanceResourceModel
 	diags := req.Plan.Get(ctx, &plan)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
@@ -329,7 +329,7 @@ func (s *CloudServerResource) Create(ctx context.Context, req resource.CreateReq
 	hostName := []api.CloudHostname{}
 	hostName = append(hostName, api.CloudHostname{Hostname: plan.Name.ValueString()})
 	// Generate API request body from plan
-	firewallRequest := api.CreateCloudServerArgs{
+	firewallRequest := api.CreateCloudInstanceArgs{
 		Dcslug:       plan.Dcslug.ValueString(),
 		Image:        plan.Image.ValueString(),
 		Planid:       plan.Planid.ValueString(),
@@ -343,23 +343,23 @@ func (s *CloudServerResource) Create(ctx context.Context, req resource.CreateReq
 		Cloud:        hostName,
 	}
 
-	tflog.Debug(ctx, "send create cloud server request")
+	tflog.Debug(ctx, "send create cloud instance request")
 
-	cloudServer, err := s.client.CreateCloudServer(ctx, firewallRequest)
+	cloudinstance, err := s.client.CreateCloudInstance(ctx, firewallRequest)
 
 	if err != nil {
 		resp.Diagnostics.AddError(
-			"Error creating cloud server",
-			"Could not create cloud server, unexpected error: "+err.Error(),
+			"Error creating cloud instance",
+			"Could not create cloud instance, unexpected error: "+err.Error(),
 		)
 		return
 	}
 
-	getCloudServer, err := s.client.GetCloudServer(ctx, plan.Cloudid.ValueString())
+	getCloudInstance, err := s.client.GetCloudInstance(ctx, plan.Cloudid.ValueString())
 	if err != nil {
 		resp.Diagnostics.AddError(
-			"Error Reading utho cloud server",
-			"Could not read utho cloud server "+plan.Cloudid.ValueString()+": "+err.Error(),
+			"Error Reading utho cloud instance",
+			"Could not read utho cloud instance "+plan.Cloudid.ValueString()+": "+err.Error(),
 		)
 		return
 	}
@@ -371,41 +371,41 @@ func (s *CloudServerResource) Create(ctx context.Context, req resource.CreateReq
 	}
 
 	// Map response body to schema and populate Computed attribute values
-	plan.RootPassword = types.StringValue(cloudServer.Password)
-	plan.Cloudid = types.StringValue(cloudServer.Cloudid)
-	plan.IP = types.StringValue(cloudServer.Ipv4)
-	plan.CPU = types.StringValue(getCloudServer.CPU)
-	plan.RAM = types.StringValue(getCloudServer.RAM)
-	plan.ManagedOs = types.StringValue(getCloudServer.ManagedOs)
-	plan.ManagedFull = types.StringValue(getCloudServer.ManagedFull)
-	plan.ManagedOnetime = types.StringValue(getCloudServer.ManagedOnetime)
-	plan.PlanDisksize = types.Int64Value(int64(getCloudServer.PlanDisksize))
-	plan.Disksize = types.Int64Value(int64(getCloudServer.Disksize))
-	plan.Ha = types.StringValue(getCloudServer.Ha)
-	plan.Status = types.StringValue(getCloudServer.Status)
-	plan.Iso = types.StringValue(getCloudServer.Iso)
-	plan.Cost = types.Float64Value(getCloudServer.Cost)
-	plan.Vmcost = types.Float64Value(getCloudServer.Vmcost)
-	plan.Imagecost = types.Int64Value(int64(getCloudServer.Imagecost))
-	plan.Backupcost = types.Int64Value(int64(getCloudServer.Backupcost))
-	plan.Hourlycost = types.Float64Value(getCloudServer.Hourlycost)
-	plan.Cloudhourlycost = types.Float64Value(getCloudServer.Cloudhourlycost)
-	plan.Imagehourlycost = types.Int64Value(int64(getCloudServer.Imagehourlycost))
-	plan.Backuphourlycost = types.Int64Value(int64(getCloudServer.Backuphourlycost))
-	plan.Creditrequired = types.Float64Value(getCloudServer.Creditrequired)
-	plan.Creditreserved = types.Int64Value(int64(getCloudServer.Creditreserved))
-	plan.Nextinvoiceamount = types.Float64Value(getCloudServer.Nextinvoiceamount)
-	plan.Nextinvoicehours = types.StringValue(getCloudServer.Nextinvoicehours)
-	plan.Consolepassword = types.StringValue(getCloudServer.Consolepassword)
-	plan.Powerstatus = types.StringValue(getCloudServer.Powerstatus)
-	plan.CreatedAt = types.StringValue(getCloudServer.CreatedAt)
-	plan.UpdatedAt = types.StringValue(getCloudServer.UpdatedAt)
-	plan.Nextduedate = types.StringValue(getCloudServer.Nextduedate)
-	plan.Bandwidth = types.StringValue(getCloudServer.Bandwidth)
-	plan.BandwidthUsed = types.Int64Value(int64(getCloudServer.BandwidthUsed))
-	plan.BandwidthFree = types.Int64Value(int64(getCloudServer.BandwidthFree))
-	plan.Enablebackup = types.BoolValue(enableBackupMap[getCloudServer.Features.Backups])
-	plan.GpuAvailable = types.StringValue(getCloudServer.GpuAvailable)
+	plan.RootPassword = types.StringValue(cloudinstance.Password)
+	plan.Cloudid = types.StringValue(cloudinstance.Cloudid)
+	plan.IP = types.StringValue(cloudinstance.Ipv4)
+	plan.CPU = types.StringValue(getCloudInstance.CPU)
+	plan.RAM = types.StringValue(getCloudInstance.RAM)
+	plan.ManagedOs = types.StringValue(getCloudInstance.ManagedOs)
+	plan.ManagedFull = types.StringValue(getCloudInstance.ManagedFull)
+	plan.ManagedOnetime = types.StringValue(getCloudInstance.ManagedOnetime)
+	plan.PlanDisksize = types.Int64Value(int64(getCloudInstance.PlanDisksize))
+	plan.Disksize = types.Int64Value(int64(getCloudInstance.Disksize))
+	plan.Ha = types.StringValue(getCloudInstance.Ha)
+	plan.Status = types.StringValue(getCloudInstance.Status)
+	plan.Iso = types.StringValue(getCloudInstance.Iso)
+	plan.Cost = types.Float64Value(getCloudInstance.Cost)
+	plan.Vmcost = types.Float64Value(getCloudInstance.Vmcost)
+	plan.Imagecost = types.Int64Value(int64(getCloudInstance.Imagecost))
+	plan.Backupcost = types.Int64Value(int64(getCloudInstance.Backupcost))
+	plan.Hourlycost = types.Float64Value(getCloudInstance.Hourlycost)
+	plan.Cloudhourlycost = types.Float64Value(getCloudInstance.Cloudhourlycost)
+	plan.Imagehourlycost = types.Int64Value(int64(getCloudInstance.Imagehourlycost))
+	plan.Backuphourlycost = types.Int64Value(int64(getCloudInstance.Backuphourlycost))
+	plan.Creditrequired = types.Float64Value(getCloudInstance.Creditrequired)
+	plan.Creditreserved = types.Int64Value(int64(getCloudInstance.Creditreserved))
+	plan.Nextinvoiceamount = types.Float64Value(getCloudInstance.Nextinvoiceamount)
+	plan.Nextinvoicehours = types.StringValue(getCloudInstance.Nextinvoicehours)
+	plan.Consolepassword = types.StringValue(getCloudInstance.Consolepassword)
+	plan.Powerstatus = types.StringValue(getCloudInstance.Powerstatus)
+	plan.CreatedAt = types.StringValue(getCloudInstance.CreatedAt)
+	plan.UpdatedAt = types.StringValue(getCloudInstance.UpdatedAt)
+	plan.Nextduedate = types.StringValue(getCloudInstance.Nextduedate)
+	plan.Bandwidth = types.StringValue(getCloudInstance.Bandwidth)
+	plan.BandwidthUsed = types.Int64Value(int64(getCloudInstance.BandwidthUsed))
+	plan.BandwidthFree = types.Int64Value(int64(getCloudInstance.BandwidthFree))
+	plan.Enablebackup = types.BoolValue(enableBackupMap[getCloudInstance.Features.Backups])
+	plan.GpuAvailable = types.StringValue(getCloudInstance.GpuAvailable)
 
 	// set state for primary types
 	diags = resp.State.Set(ctx, plan)
@@ -415,7 +415,7 @@ func (s *CloudServerResource) Create(ctx context.Context, req resource.CreateReq
 	}
 
 	// set state fro compex types
-	featuresResourceModel := FeaturesResourceModel{Backups: types.StringValue(getCloudServer.Features.Backups)}
+	featuresResourceModel := FeaturesResourceModel{Backups: types.StringValue(getCloudInstance.Features.Backups)}
 	diags = resp.State.SetAttribute(ctx, path.Root("features"), featuresResourceModel)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
@@ -424,10 +424,10 @@ func (s *CloudServerResource) Create(ctx context.Context, req resource.CreateReq
 
 	// dclocatio
 	dclocationResourceModel := DclocationResourceModel{
-		Location: types.StringValue(getCloudServer.Dclocation.Location),
-		Country:  types.StringValue(getCloudServer.Dclocation.Country),
-		Dc:       types.StringValue(getCloudServer.Dclocation.Dc),
-		Dccc:     types.StringValue(getCloudServer.Dclocation.Dccc),
+		Location: types.StringValue(getCloudInstance.Dclocation.Location),
+		Country:  types.StringValue(getCloudInstance.Dclocation.Country),
+		Dc:       types.StringValue(getCloudInstance.Dclocation.Dc),
+		Dccc:     types.StringValue(getCloudInstance.Dclocation.Dccc),
 	}
 	diags = resp.State.SetAttribute(ctx, path.Root("dclocation"), dclocationResourceModel)
 	resp.Diagnostics.Append(diags...)
@@ -446,8 +446,8 @@ func (s *CloudServerResource) Create(ctx context.Context, req resource.CreateReq
 		"type":       types.StringType,
 		"primary":    types.StringType,
 	}}
-	privateNetworkModel := make([]PrivateNetworkResourceModel, len(getCloudServer.Networks.Private.V4))
-	for i, v := range getCloudServer.Networks.Private.V4 {
+	privateNetworkModel := make([]PrivateNetworkResourceModel, len(getCloudInstance.Networks.Private.V4))
+	for i, v := range getCloudInstance.Networks.Private.V4 {
 		privateNetworkModel[i] = PrivateNetworkResourceModel{
 			Noip:      types.Int64Value(int64(v.Noip)),
 			IPAddress: types.StringValue(v.IPAddress),
@@ -479,8 +479,8 @@ func (s *CloudServerResource) Create(ctx context.Context, req resource.CreateReq
 		"nat":        types.BoolType,
 		"primary":    types.StringType,
 	}}
-	PublicNetworkModel := make([]PublicNetworkResourceModel, len(getCloudServer.Networks.Public.V4))
-	for i, v := range getCloudServer.Networks.Public.V4 {
+	PublicNetworkModel := make([]PublicNetworkResourceModel, len(getCloudInstance.Networks.Public.V4))
+	for i, v := range getCloudInstance.Networks.Public.V4 {
 		PublicNetworkModel[i] = PublicNetworkResourceModel{
 			IPAddress: types.StringValue(v.IPAddress),
 			Netmask:   types.StringValue(v.Netmask),
@@ -511,8 +511,8 @@ func (s *CloudServerResource) Create(ctx context.Context, req resource.CreateReq
 		"bus":        types.StringType,
 		"type":       types.StringType,
 	}}
-	storageModel := make([]StoragesResourceModel, len(getCloudServer.Storages))
-	for i, v := range getCloudServer.Storages {
+	storageModel := make([]StoragesResourceModel, len(getCloudInstance.Storages))
+	for i, v := range getCloudInstance.Storages {
 		storageModel[i] = StoragesResourceModel{
 			ID:        types.StringValue(v.ID),
 			Size:      types.Int64Value(int64(v.Size)),
@@ -542,8 +542,8 @@ func (s *CloudServerResource) Create(ctx context.Context, req resource.CreateReq
 		"note":       types.StringType,
 		"name":       types.StringType,
 	}}
-	snapshotModel := make([]SnapshotsResourceModel, len(getCloudServer.Snapshots))
-	for i, v := range getCloudServer.Snapshots {
+	snapshotModel := make([]SnapshotsResourceModel, len(getCloudInstance.Snapshots))
+	for i, v := range getCloudInstance.Snapshots {
 		snapshotModel[i] = SnapshotsResourceModel{
 			ID:        types.StringValue(v.ID),
 			Size:      types.StringValue(v.Size),
@@ -568,8 +568,8 @@ func (s *CloudServerResource) Create(ctx context.Context, req resource.CreateReq
 		"created_at": types.StringType,
 		"name":       types.StringType,
 	}}
-	firewallModel := make([]FirewallsResourceModel, len(getCloudServer.Firewalls))
-	for i, v := range getCloudServer.Firewalls {
+	firewallModel := make([]FirewallsResourceModel, len(getCloudInstance.Firewalls))
+	for i, v := range getCloudInstance.Firewalls {
 		firewallModel[i] = FirewallsResourceModel{
 			ID:        types.StringValue(v.ID),
 			CreatedAt: types.StringValue(v.CreatedAt),
@@ -587,28 +587,28 @@ func (s *CloudServerResource) Create(ctx context.Context, req resource.CreateReq
 		return
 	}
 
-	tflog.Debug(ctx, "finish create cloud server")
+	tflog.Debug(ctx, "finish create cloud instance")
 }
 
 // Read resource information.
-func (s *CloudServerResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
-	tflog.Debug(ctx, "read cloud server")
+func (s *CloudInstanceResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
+	tflog.Debug(ctx, "read cloud instance")
 
 	// Get current state
-	var state CloudServerResourceModel
+	var state CloudInstanceResourceModel
 	diags := req.State.Get(ctx, &state)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	tflog.Debug(ctx, "send get cloud server request")
-	// Get refreshed cloud server value from utho
-	cloudServer, err := s.client.GetCloudServer(ctx, state.Cloudid.ValueString())
+	tflog.Debug(ctx, "send get cloud instance request")
+	// Get refreshed cloud instance value from utho
+	cloudinstance, err := s.client.GetCloudInstance(ctx, state.Cloudid.ValueString())
 	if err != nil {
 		resp.Diagnostics.AddError(
-			"Error Reading utho cloud server",
-			"Could not read utho cloud server "+state.Cloudid.ValueString()+": "+err.Error(),
+			"Error Reading utho cloud instance",
+			"Could not read utho cloud instance "+state.Cloudid.ValueString()+": "+err.Error(),
 		)
 		return
 	}
@@ -620,45 +620,45 @@ func (s *CloudServerResource) Read(ctx context.Context, req resource.ReadRequest
 	}
 
 	// Overwrite items with refreshed state
-	state.Name = types.StringValue(cloudServer.Hostname)
-	state.Dcslug = types.StringValue(cloudServer.Dclocation.Dc)
-	state.Image = types.StringValue(cloudServer.Image.Image)
-	state.Firewall = types.StringValue(cloudServer.Firewalls[0].ID)
-	state.Enablebackup = types.BoolValue(enableBackupMap[cloudServer.Features.Backups])
-	state.Billingcycle = types.StringValue(cloudServer.Billingcycle)
-	state.Cloudid = types.StringValue(cloudServer.Cloudid)
-	state.IP = types.StringValue(cloudServer.IP)
-	state.CPU = types.StringValue(cloudServer.CPU)
-	state.RAM = types.StringValue(cloudServer.RAM)
-	state.ManagedOs = types.StringValue(cloudServer.ManagedOs)
-	state.ManagedFull = types.StringValue(cloudServer.ManagedFull)
-	state.ManagedOnetime = types.StringValue(cloudServer.ManagedOnetime)
-	state.PlanDisksize = types.Int64Value(int64(cloudServer.PlanDisksize))
-	state.Disksize = types.Int64Value(int64(cloudServer.Disksize))
-	state.Ha = types.StringValue(cloudServer.Ha)
-	state.Status = types.StringValue(cloudServer.Status)
-	state.Iso = types.StringValue(cloudServer.Iso)
-	state.Cost = types.Float64Value(cloudServer.Cost)
-	state.Vmcost = types.Float64Value(cloudServer.Vmcost)
-	state.Imagecost = types.Int64Value(int64(cloudServer.Imagecost))
-	state.Backupcost = types.Int64Value(int64(cloudServer.Backupcost))
-	state.Hourlycost = types.Float64Value(cloudServer.Hourlycost)
-	state.Cloudhourlycost = types.Float64Value(cloudServer.Cloudhourlycost)
-	state.Imagehourlycost = types.Int64Value(int64(cloudServer.Imagehourlycost))
-	state.Backuphourlycost = types.Int64Value(int64(cloudServer.Backuphourlycost))
-	state.Creditrequired = types.Float64Value(cloudServer.Creditrequired)
-	state.Creditreserved = types.Int64Value(int64(cloudServer.Creditreserved))
-	state.Nextinvoiceamount = types.Float64Value(cloudServer.Nextinvoiceamount)
-	state.Nextinvoicehours = types.StringValue(cloudServer.Nextinvoicehours)
-	state.Consolepassword = types.StringValue(cloudServer.Consolepassword)
-	state.Powerstatus = types.StringValue(cloudServer.Powerstatus)
-	state.CreatedAt = types.StringValue(cloudServer.CreatedAt)
-	state.UpdatedAt = types.StringValue(cloudServer.UpdatedAt)
-	state.Nextduedate = types.StringValue(cloudServer.Nextduedate)
-	state.Bandwidth = types.StringValue(cloudServer.Bandwidth)
-	state.BandwidthUsed = types.Int64Value(int64(cloudServer.BandwidthUsed))
-	state.BandwidthFree = types.Int64Value(int64(cloudServer.BandwidthFree))
-	state.GpuAvailable = types.StringValue(cloudServer.GpuAvailable)
+	state.Name = types.StringValue(cloudinstance.Hostname)
+	state.Dcslug = types.StringValue(cloudinstance.Dclocation.Dc)
+	state.Image = types.StringValue(cloudinstance.Image.Image)
+	state.Firewall = types.StringValue(cloudinstance.Firewalls[0].ID)
+	state.Enablebackup = types.BoolValue(enableBackupMap[cloudinstance.Features.Backups])
+	state.Billingcycle = types.StringValue(cloudinstance.Billingcycle)
+	state.Cloudid = types.StringValue(cloudinstance.Cloudid)
+	state.IP = types.StringValue(cloudinstance.IP)
+	state.CPU = types.StringValue(cloudinstance.CPU)
+	state.RAM = types.StringValue(cloudinstance.RAM)
+	state.ManagedOs = types.StringValue(cloudinstance.ManagedOs)
+	state.ManagedFull = types.StringValue(cloudinstance.ManagedFull)
+	state.ManagedOnetime = types.StringValue(cloudinstance.ManagedOnetime)
+	state.PlanDisksize = types.Int64Value(int64(cloudinstance.PlanDisksize))
+	state.Disksize = types.Int64Value(int64(cloudinstance.Disksize))
+	state.Ha = types.StringValue(cloudinstance.Ha)
+	state.Status = types.StringValue(cloudinstance.Status)
+	state.Iso = types.StringValue(cloudinstance.Iso)
+	state.Cost = types.Float64Value(cloudinstance.Cost)
+	state.Vmcost = types.Float64Value(cloudinstance.Vmcost)
+	state.Imagecost = types.Int64Value(int64(cloudinstance.Imagecost))
+	state.Backupcost = types.Int64Value(int64(cloudinstance.Backupcost))
+	state.Hourlycost = types.Float64Value(cloudinstance.Hourlycost)
+	state.Cloudhourlycost = types.Float64Value(cloudinstance.Cloudhourlycost)
+	state.Imagehourlycost = types.Int64Value(int64(cloudinstance.Imagehourlycost))
+	state.Backuphourlycost = types.Int64Value(int64(cloudinstance.Backuphourlycost))
+	state.Creditrequired = types.Float64Value(cloudinstance.Creditrequired)
+	state.Creditreserved = types.Int64Value(int64(cloudinstance.Creditreserved))
+	state.Nextinvoiceamount = types.Float64Value(cloudinstance.Nextinvoiceamount)
+	state.Nextinvoicehours = types.StringValue(cloudinstance.Nextinvoicehours)
+	state.Consolepassword = types.StringValue(cloudinstance.Consolepassword)
+	state.Powerstatus = types.StringValue(cloudinstance.Powerstatus)
+	state.CreatedAt = types.StringValue(cloudinstance.CreatedAt)
+	state.UpdatedAt = types.StringValue(cloudinstance.UpdatedAt)
+	state.Nextduedate = types.StringValue(cloudinstance.Nextduedate)
+	state.Bandwidth = types.StringValue(cloudinstance.Bandwidth)
+	state.BandwidthUsed = types.Int64Value(int64(cloudinstance.BandwidthUsed))
+	state.BandwidthFree = types.Int64Value(int64(cloudinstance.BandwidthFree))
+	state.GpuAvailable = types.StringValue(cloudinstance.GpuAvailable)
 
 	if !state.Snapshotid.IsNull() {
 		state.Snapshotid = types.StringValue(state.Snapshotid.ValueString())
@@ -693,7 +693,7 @@ func (s *CloudServerResource) Read(ctx context.Context, req resource.ReadRequest
 	}
 
 	// set state fro compex types
-	featuresResourceModel := FeaturesResourceModel{Backups: types.StringValue(cloudServer.Features.Backups)}
+	featuresResourceModel := FeaturesResourceModel{Backups: types.StringValue(cloudinstance.Features.Backups)}
 	diags = resp.State.SetAttribute(ctx, path.Root("features"), featuresResourceModel)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
@@ -702,10 +702,10 @@ func (s *CloudServerResource) Read(ctx context.Context, req resource.ReadRequest
 
 	// dclocatio
 	dclocationResourceModel := DclocationResourceModel{
-		Location: types.StringValue(cloudServer.Dclocation.Location),
-		Country:  types.StringValue(cloudServer.Dclocation.Country),
-		Dc:       types.StringValue(cloudServer.Dclocation.Dc),
-		Dccc:     types.StringValue(cloudServer.Dclocation.Dccc),
+		Location: types.StringValue(cloudinstance.Dclocation.Location),
+		Country:  types.StringValue(cloudinstance.Dclocation.Country),
+		Dc:       types.StringValue(cloudinstance.Dclocation.Dc),
+		Dccc:     types.StringValue(cloudinstance.Dclocation.Dccc),
 	}
 	diags = resp.State.SetAttribute(ctx, path.Root("dclocation"), dclocationResourceModel)
 	resp.Diagnostics.Append(diags...)
@@ -724,8 +724,8 @@ func (s *CloudServerResource) Read(ctx context.Context, req resource.ReadRequest
 		"type":       types.StringType,
 		"primary":    types.StringType,
 	}}
-	privateNetworkModel := make([]PrivateNetworkResourceModel, len(cloudServer.Networks.Private.V4))
-	for i, v := range cloudServer.Networks.Private.V4 {
+	privateNetworkModel := make([]PrivateNetworkResourceModel, len(cloudinstance.Networks.Private.V4))
+	for i, v := range cloudinstance.Networks.Private.V4 {
 		privateNetworkModel[i] = PrivateNetworkResourceModel{
 			Noip:      types.Int64Value(int64(v.Noip)),
 			IPAddress: types.StringValue(v.IPAddress),
@@ -757,8 +757,8 @@ func (s *CloudServerResource) Read(ctx context.Context, req resource.ReadRequest
 		"nat":        types.BoolType,
 		"primary":    types.StringType,
 	}}
-	PublicNetworkModel := make([]PublicNetworkResourceModel, len(cloudServer.Networks.Public.V4))
-	for i, v := range cloudServer.Networks.Public.V4 {
+	PublicNetworkModel := make([]PublicNetworkResourceModel, len(cloudinstance.Networks.Public.V4))
+	for i, v := range cloudinstance.Networks.Public.V4 {
 		PublicNetworkModel[i] = PublicNetworkResourceModel{
 			IPAddress: types.StringValue(v.IPAddress),
 			Netmask:   types.StringValue(v.Netmask),
@@ -789,8 +789,8 @@ func (s *CloudServerResource) Read(ctx context.Context, req resource.ReadRequest
 		"bus":        types.StringType,
 		"type":       types.StringType,
 	}}
-	storageModel := make([]StoragesResourceModel, len(cloudServer.Storages))
-	for i, v := range cloudServer.Storages {
+	storageModel := make([]StoragesResourceModel, len(cloudinstance.Storages))
+	for i, v := range cloudinstance.Storages {
 		storageModel[i] = StoragesResourceModel{
 			ID:        types.StringValue(v.ID),
 			Size:      types.Int64Value(int64(v.Size)),
@@ -820,8 +820,8 @@ func (s *CloudServerResource) Read(ctx context.Context, req resource.ReadRequest
 		"note":       types.StringType,
 		"name":       types.StringType,
 	}}
-	snapshotModel := make([]SnapshotsResourceModel, len(cloudServer.Snapshots))
-	for i, v := range cloudServer.Snapshots {
+	snapshotModel := make([]SnapshotsResourceModel, len(cloudinstance.Snapshots))
+	for i, v := range cloudinstance.Snapshots {
 		snapshotModel[i] = SnapshotsResourceModel{
 			ID:        types.StringValue(v.ID),
 			Size:      types.StringValue(v.Size),
@@ -846,8 +846,8 @@ func (s *CloudServerResource) Read(ctx context.Context, req resource.ReadRequest
 		"created_at": types.StringType,
 		"name":       types.StringType,
 	}}
-	firewallModel := make([]FirewallsResourceModel, len(cloudServer.Firewalls))
-	for i, v := range cloudServer.Firewalls {
+	firewallModel := make([]FirewallsResourceModel, len(cloudinstance.Firewalls))
+	for i, v := range cloudinstance.Firewalls {
 		firewallModel[i] = FirewallsResourceModel{
 			ID:        types.StringValue(v.ID),
 			CreatedAt: types.StringValue(v.CreatedAt),
@@ -865,30 +865,30 @@ func (s *CloudServerResource) Read(ctx context.Context, req resource.ReadRequest
 		return
 	}
 
-	tflog.Debug(ctx, "finish get cloud server request")
+	tflog.Debug(ctx, "finish get cloud instance request")
 }
 
-func (s *CloudServerResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
+func (s *CloudInstanceResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
 	// updating resource is not supported
 }
 
 // Delete deletes the resource and removes the Terraform state on success.
-func (s *CloudServerResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
-	tflog.Debug(ctx, "delete cloud server")
+func (s *CloudInstanceResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
+	tflog.Debug(ctx, "delete cloud instance")
 	// Get current state
-	var state CloudServerResourceModel
+	var state CloudInstanceResourceModel
 	diags := req.State.Get(ctx, &state)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	tflog.Debug(ctx, "send delete cloud server request")
-	// delete cloud server
-	err := s.client.DeleteCloudServer(ctx, state.Cloudid.ValueString())
+	tflog.Debug(ctx, "send delete cloud instance request")
+	// delete cloud instance
+	err := s.client.DeleteCloudInstance(ctx, state.Cloudid.ValueString())
 	if err != nil {
 		resp.Diagnostics.AddError(
-			"Error deleteing utho cloud server",
-			"Could not delete utho cloud server "+state.Cloudid.ValueString()+": "+err.Error(),
+			"Error deleteing utho cloud instance",
+			"Could not delete utho cloud instance "+state.Cloudid.ValueString()+": "+err.Error(),
 		)
 		return
 	}
