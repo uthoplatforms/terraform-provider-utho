@@ -11,7 +11,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
-	"github.com/uthoterraform/terraform-provider-utho/api"
+	"github.com/uthoplatforms/terraform-provider-utho/api"
 )
 
 // implement resource interfaces.

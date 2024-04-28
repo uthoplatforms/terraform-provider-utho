@@ -1,4 +1,4 @@
-module github.com/uthoterraform/terraform-provider-utho
+module github.com/uthoplatforms/terraform-provider-utho
 
 go 1.21
 

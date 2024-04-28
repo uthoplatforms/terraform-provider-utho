@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 
-	"github.com/uthoterraform/terraform-provider-utho/helper"
+	"github.com/uthoplatforms/terraform-provider-utho/helper"
 
 	"net/http"
 )
