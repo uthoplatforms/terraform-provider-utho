@@ -11,7 +11,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
-	"github.com/uthoterraform/terraform-provider-utho/api"
+	"github.com/uthoplatforms/terraform-provider-utho/api"
 )
 
 var _ provider.Provider = &uthoProvider{}
@@ -134,5 +134,6 @@ func (p *uthoProvider) Resources(_ context.Context) []func() resource.Resource {
 		NewDnsRecordResource,
 		NewLoadbalancerResource,
 		NewCloudInstanceResource,
+		NewKubernetesResource,
 	}
 }
