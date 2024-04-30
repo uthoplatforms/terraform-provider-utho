@@ -92,40 +92,37 @@ func (s *LoadbalancerResource) Schema(_ context.Context, _ resource.SchemaReques
 	resp.Schema = schema.Schema{
 		Attributes: map[string]schema.Attribute{
 			"dcslug": schema.StringAttribute{
-				Required: true,
-				// Requires Replace if the value change
+				Required:    true,
+				Description: "Provide Zone dcslug eg: innoida",
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.RequiresReplace(),
 				},
-				Description: "dcslug",
 			},
 			"name": schema.StringAttribute{
-				Required: true,
-				// Requires Replace if the value change
+				Required:    true,
+				Description: "Load Balancer name eg: webapplb",
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.RequiresReplace(),
 				},
-				Description: "name",
 			},
 			"type": schema.StringAttribute{
-				Required: true,
-				// Requires Replace if the value change
+				Required:    true,
+				Description: "Load-Balancer type must be either application or network. The default value is application",
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.RequiresReplace(),
 				},
-				Description: "type of loadbalancer",
 			},
 			"id":            schema.StringAttribute{Computed: true, Description: "Id"},
-			"userid":        schema.StringAttribute{Computed: true, Description: "Userid"},
+			"userid":        schema.StringAttribute{Computed: true, Description: "User id"},
 			"ip":            schema.StringAttribute{Computed: true, Description: "Ip"},
 			"algorithm":     schema.StringAttribute{Computed: true, Description: "Algorithm"},
 			"cookie":        schema.StringAttribute{Computed: true, Description: "Cookie"},
-			"cookiename":    schema.StringAttribute{Computed: true, Description: "Cookiename"},
-			"redirecthttps": schema.StringAttribute{Computed: true, Description: "Redirecthttps"},
+			"cookiename":    schema.StringAttribute{Computed: true, Description: "Cookie name"},
+			"redirecthttps": schema.StringAttribute{Computed: true, Description: "Redirect https"},
 			"country":       schema.StringAttribute{Computed: true, Description: "Country"},
 			"cc":            schema.StringAttribute{Computed: true, Description: "Cc"},
 			"city":          schema.StringAttribute{Computed: true, Description: "City"},
-			"backendcount":  schema.StringAttribute{Computed: true, Description: "Backendcount"},
+			"backendcount":  schema.StringAttribute{Computed: true, Description: "Backend count"},
 			"created_at":    schema.StringAttribute{Computed: true, Description: "Created At"},
 			"status":        schema.StringAttribute{Computed: true, Description: "Status"},
 		},

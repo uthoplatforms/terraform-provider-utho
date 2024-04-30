@@ -69,22 +69,21 @@ func (s *FirewallResource) Schema(_ context.Context, _ resource.SchemaRequest, r
 			"id": schema.StringAttribute{Computed: true, Description: "id"},
 			"name": schema.StringAttribute{
 				Required: true,
-				// Requires Replace if the value change
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.RequiresReplace(),
 				},
 				Description: "Name of the firewall",
 			},
-			"created_at":   schema.StringAttribute{Computed: true, Description: "created_at"},
-			"rulecount":    schema.StringAttribute{Computed: true, Description: "rulecount"},
-			"serverscount": schema.StringAttribute{Computed: true, Description: "serverscount"},
+			"created_at":   schema.StringAttribute{Computed: true, Description: "Created At"},
+			"rulecount":    schema.StringAttribute{Computed: true, Description: "Rule Count"},
+			"serverscount": schema.StringAttribute{Computed: true, Description: "Servers Count"},
 		},
 	}
 }
 
 // Import using firewall as the attribute
 func (s *FirewallResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
-	resource.ImportStatePassthroughID(ctx, path.Root("firewall"), req, resp)
+	resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)
 }
 
 // Create a new resource.

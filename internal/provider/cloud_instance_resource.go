@@ -80,7 +80,6 @@ type CloudInstanceResourceModel struct {
 	BandwidthFree     types.Int64   `tfsdk:"bandwidth_free"`
 	GpuAvailable      types.String  `tfsdk:"gpu_available"`
 	/////////////////////////
-	Features       types.Object `tfsdk:"features"`
 	Dclocation     types.Object `tfsdk:"dclocation"`
 	PublicNetwork  types.List   `tfsdk:"public_network"`
 	PrivateNetwork types.List   `tfsdk:"private_network"`
@@ -106,9 +105,6 @@ type PrivateNetworkResourceModel struct {
 	Gateway   types.String `tfsdk:"gateway"`
 	Type      types.String `tfsdk:"type"`
 	Primary   types.String `tfsdk:"primary"`
-}
-type FeaturesResourceModel struct {
-	Backups types.String `tfsdk:"backups"`
 }
 type DclocationResourceModel struct {
 	Location types.String `tfsdk:"location"`
@@ -165,18 +161,18 @@ func (d *CloudInstanceResource) Configure(_ context.Context, req resource.Config
 // Schema defines the schema for the resource.
 func (s *CloudInstanceResource) Schema(_ context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{Attributes: map[string]schema.Attribute{
-		"name":         schema.StringAttribute{Required: true, Description: "", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
-		"dcslug":       schema.StringAttribute{Required: true, Description: "", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
-		"image":        schema.StringAttribute{Required: true, Description: "", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
-		"planid":       schema.StringAttribute{Optional: true, Description: "", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
-		"firewall":     schema.StringAttribute{Optional: true, Description: "", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
-		"enablebackup": schema.BoolAttribute{Optional: true, Description: "", PlanModifiers: []planmodifier.Bool{boolplanmodifier.RequiresReplace()}},
-		"billingcycle": schema.StringAttribute{Optional: true, Description: "", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
-		"backupid":     schema.StringAttribute{Optional: true, Description: "", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
-		"snapshotid":   schema.StringAttribute{Optional: true, Description: "", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
-		"sshkeys":      schema.StringAttribute{Optional: true, Description: "", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
 
-		"root_password":     schema.StringAttribute{Computed: true, Description: ""},
+		"name":              schema.StringAttribute{Required: true, Description: "Give a name to your cloud server eg: myweb1.server.com", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
+		"dcslug":            schema.StringAttribute{Required: true, Description: "Provide Zone dcslug eg: innoida", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
+		"image":             schema.StringAttribute{Required: true, Description: "Image name eg: centos-7.4-x86_64", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
+		"planid":            schema.StringAttribute{Optional: true, Description: "Cloud Plan ID", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
+		"firewall":          schema.StringAttribute{Optional: true, Description: "", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
+		"enablebackup":      schema.BoolAttribute{Optional: true, Description: "Please pass value on to enable weekly backups*", PlanModifiers: []planmodifier.Bool{boolplanmodifier.RequiresReplace()}},
+		"billingcycle":      schema.StringAttribute{Optional: true, Description: "If you required billing cycle other then hourly billing you can pass value as eg: monthly, 3month, 6month, 12month. by default its selected as hourly", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
+		"backupid":          schema.StringAttribute{Optional: true, Description: "Provide a backupid if you have a backup in same datacenter location.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
+		"snapshotid":        schema.StringAttribute{Optional: true, Description: "Provide a snapshot id if you have a snapshot in same datacenter location.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
+		"sshkeys":           schema.StringAttribute{Optional: true, Description: "Privide SSH Key ids or pass multiple SSH Key ids with commans (eg: 432,331).", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
+		"root_password":     schema.StringAttribute{Computed: true, Description: "Root Password"},
 		"cloudid":           schema.StringAttribute{Computed: true, Description: "Cloudid"},
 		"ip":                schema.StringAttribute{Computed: true, Description: "Ip"},
 		"cpu":               schema.StringAttribute{Computed: true, Description: "Cpu"},
@@ -210,16 +206,6 @@ func (s *CloudInstanceResource) Schema(_ context.Context, _ resource.SchemaReque
 		"bandwidth_used":    schema.Int64Attribute{Computed: true, Description: "Bandwidth Used"},
 		"bandwidth_free":    schema.Int64Attribute{Computed: true, Description: "Bandwidth Free"},
 		"gpu_available":     schema.StringAttribute{Computed: true, Description: "Gpu Available"},
-		"features": schema.SingleNestedAttribute{
-			Computed:    true,
-			Description: "Features",
-			Attributes: map[string]schema.Attribute{
-				"backups": schema.StringAttribute{
-					Computed:    true,
-					Description: "backups",
-				},
-			},
-		},
 		"dclocation": schema.SingleNestedAttribute{
 			Computed:    true,
 			Description: "dclocation",
@@ -415,13 +401,6 @@ func (s *CloudInstanceResource) Create(ctx context.Context, req resource.CreateR
 	}
 
 	// set state fro compex types
-	featuresResourceModel := FeaturesResourceModel{Backups: types.StringValue(getCloudInstance.Features.Backups)}
-	diags = resp.State.SetAttribute(ctx, path.Root("features"), featuresResourceModel)
-	resp.Diagnostics.Append(diags...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
-
 	// dclocatio
 	dclocationResourceModel := DclocationResourceModel{
 		Location: types.StringValue(getCloudInstance.Dclocation.Location),
@@ -693,13 +672,6 @@ func (s *CloudInstanceResource) Read(ctx context.Context, req resource.ReadReque
 	}
 
 	// set state fro compex types
-	featuresResourceModel := FeaturesResourceModel{Backups: types.StringValue(cloudinstance.Features.Backups)}
-	diags = resp.State.SetAttribute(ctx, path.Root("features"), featuresResourceModel)
-	resp.Diagnostics.Append(diags...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
-
 	// dclocatio
 	dclocationResourceModel := DclocationResourceModel{
 		Location: types.StringValue(cloudinstance.Dclocation.Location),

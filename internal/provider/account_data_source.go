@@ -183,7 +183,7 @@ func (d *AccountDataSource) Read(ctx context.Context, req datasource.ReadRequest
 	userInfo := account.User
 	if err != nil {
 		resp.Diagnostics.AddError(
-			"Unable to list `account`",
+			"Unable to list `accounts`",
 			err.Error(),
 		)
 		return

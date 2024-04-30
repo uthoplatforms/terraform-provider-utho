@@ -68,11 +68,10 @@ func (s *DomainResource) Schema(_ context.Context, _ resource.SchemaRequest, res
 		Attributes: map[string]schema.Attribute{
 			"domain": schema.StringAttribute{
 				Required: true,
-				// Requires Replace if the value change
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.RequiresReplace(),
 				},
-				Description: "Must be unique",
+				Description: "Domain name",
 			},
 			"nspoint": schema.StringAttribute{Computed: true, Description: "nspoint"},
 		},

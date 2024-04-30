@@ -71,78 +71,23 @@ func (d *DnsRecordResource) Configure(_ context.Context, req resource.ConfigureR
 func (s *DnsRecordResource) Schema(_ context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
 		Attributes: map[string]schema.Attribute{
-			"id": schema.StringAttribute{Computed: true, Description: "id"},
-			"domain": schema.StringAttribute{
-				Required: true,
-				// Requires Replace if the value change
-				PlanModifiers: []planmodifier.String{
-					stringplanmodifier.RequiresReplace(),
-				},
-				Description: "Name of the domain",
-			},
-			"type": schema.StringAttribute{
-				Required: true,
-				PlanModifiers: []planmodifier.String{
-					stringplanmodifier.RequiresReplace(),
-				},
-				Description: "type",
-			},
-			"hostname": schema.StringAttribute{
-				Required: true,
-				PlanModifiers: []planmodifier.String{
-					stringplanmodifier.RequiresReplace(),
-				},
-				Description: "hostname",
-			},
-			"value": schema.StringAttribute{
-				Required: true,
-				PlanModifiers: []planmodifier.String{
-					stringplanmodifier.RequiresReplace(),
-				},
-				Description: "value",
-			},
-			"ttl": schema.StringAttribute{
-				Required: true,
-				PlanModifiers: []planmodifier.String{
-					stringplanmodifier.RequiresReplace(),
-				},
-				Description: "ttl",
-			},
-			"porttype": schema.StringAttribute{
-				Required: true,
-				PlanModifiers: []planmodifier.String{
-					stringplanmodifier.RequiresReplace(),
-				},
-				Description: "porttype",
-			},
-			"port": schema.StringAttribute{
-				Optional: true,
-				PlanModifiers: []planmodifier.String{
-					stringplanmodifier.RequiresReplace(),
-				},
-				Description: "port",
-			},
-			"priority": schema.StringAttribute{
-				Optional: true,
-				PlanModifiers: []planmodifier.String{
-					stringplanmodifier.RequiresReplace(),
-				},
-				Description: "priority",
-			},
-			"wight": schema.StringAttribute{
-				Optional: true,
-				PlanModifiers: []planmodifier.String{
-					stringplanmodifier.RequiresReplace(),
-				},
-				Description: "wight",
-			},
+			"id":       schema.StringAttribute{Computed: true, Description: "id"},
+			"domain":   schema.StringAttribute{Required: true, Description: "Name of the domain", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
+			"type":     schema.StringAttribute{Required: true, Description: "The Record Type (A, AAAA, CAA, CNAME, MX, TXT, SRV, NS)", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
+			"hostname": schema.StringAttribute{Required: true, Description: "Name (Hostname) The host name, alias, or service being defined by the record.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
+			"value":    schema.StringAttribute{Required: true, Description: "Variable data depending on record type. For example, the value for an A record would be the IPv4 address to which the domain will be mapped. For a CAA record, it would contain the domain name of the CA being granted permission to issue certificates.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
+			"ttl":      schema.StringAttribute{Required: true, Description: "The priority of the host (for SRV and MX records. null otherwise).", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
+			"porttype": schema.StringAttribute{Required: true, Description: "This value is the time to live for the record, in seconds. This defines the time frame that ", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
+			"port":     schema.StringAttribute{Optional: true, Description: "The port that the service is accessible on (for SRV records only. null otherwise).", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
+			"priority": schema.StringAttribute{Optional: true, Description: "priority", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
+			"wight":    schema.StringAttribute{Optional: true, Description: "The weight of records with the same priority (for SRV records only. null otherwise). ", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
 		},
 	}
 }
 
 // Import using dns record as the attribute
 func (s *DnsRecordResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
-	resource.ImportStatePassthroughID(ctx, path.Root("firewall"), req, resp)
+	resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)
 }
 
 // Create a new resource.
@@ -234,7 +179,7 @@ func (s *DnsRecordResource) Read(ctx context.Context, req resource.ReadRequest, 
 	if recordValues.ID == "" {
 		resp.Diagnostics.AddError(
 			"Error Reading utho dns record",
-			"Could not read utho dns record "+state.ID.ValueString()+": "+err.Error(),
+			"Could not read utho dns record "+state.ID.ValueString()+": ",
 		)
 		return
 	}
