@@ -4,6 +4,7 @@ This is a terraform provider for https://utho.com
 
 This provider is build using the new [Terraform Plugin Framework](https://github.com/hashicorp/terraform-plugin-framework)
 
+- Documentation: https://registry.terraform.io/providers/uthoplatforms/utho/latest/docs
 ## Requirements
 
 - [Terraform](https://developer.hashicorp.com/terraform/downloads) v1.x.x
