@@ -46,7 +46,7 @@ type CloudInstanceResourceModel struct {
 	Sshkeys      types.String `tfsdk:"sshkeys"`
 	Billingcycle types.String `tfsdk:"billingcycle"`
 	////////////////////////
-	Cloudid           types.String  `tfsdk:"cloudid"`
+	ID                types.String  `tfsdk:"id"`
 	IP                types.String  `tfsdk:"ip"`
 	CPU               types.String  `tfsdk:"cpu"`
 	RAM               types.String  `tfsdk:"ram"`
@@ -161,7 +161,7 @@ func (d *CloudInstanceResource) Configure(_ context.Context, req resource.Config
 // Schema defines the schema for the resource.
 func (s *CloudInstanceResource) Schema(_ context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{Attributes: map[string]schema.Attribute{
-
+		"id":                schema.StringAttribute{Computed: true, Description: "Cloud id"},
 		"name":              schema.StringAttribute{Required: true, Description: "Give a name to your cloud server eg: myweb1.server.com", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
 		"dcslug":            schema.StringAttribute{Required: true, Description: "Provide Zone dcslug eg: innoida", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
 		"image":             schema.StringAttribute{Required: true, Description: "Image name eg: centos-7.4-x86_64", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
@@ -173,7 +173,6 @@ func (s *CloudInstanceResource) Schema(_ context.Context, _ resource.SchemaReque
 		"snapshotid":        schema.StringAttribute{Optional: true, Description: "Provide a snapshot id if you have a snapshot in same datacenter location.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
 		"sshkeys":           schema.StringAttribute{Optional: true, Description: "Privide SSH Key ids or pass multiple SSH Key ids with commans (eg: 432,331).", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
 		"root_password":     schema.StringAttribute{Computed: true, Description: "Root Password"},
-		"cloudid":           schema.StringAttribute{Computed: true, Description: "Cloudid"},
 		"ip":                schema.StringAttribute{Computed: true, Description: "Ip"},
 		"cpu":               schema.StringAttribute{Computed: true, Description: "Cpu"},
 		"ram":               schema.StringAttribute{Computed: true, Description: "Ram"},
@@ -293,7 +292,7 @@ func (s *CloudInstanceResource) Schema(_ context.Context, _ resource.SchemaReque
 
 // Import using cloud instance as the attribute
 func (s *CloudInstanceResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
-	resource.ImportStatePassthroughID(ctx, path.Root("cloudid"), req, resp)
+	resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)
 }
 
 // Create a new resource.
@@ -341,11 +340,11 @@ func (s *CloudInstanceResource) Create(ctx context.Context, req resource.CreateR
 		return
 	}
 
-	getCloudInstance, err := s.client.GetCloudInstance(ctx, plan.Cloudid.ValueString())
+	getCloudInstance, err := s.client.GetCloudInstance(ctx, plan.ID.ValueString())
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error Reading utho cloud instance",
-			"Could not read utho cloud instance "+plan.Cloudid.ValueString()+": "+err.Error(),
+			"Could not read utho cloud instance "+plan.ID.ValueString()+": "+err.Error(),
 		)
 		return
 	}
@@ -358,7 +357,7 @@ func (s *CloudInstanceResource) Create(ctx context.Context, req resource.CreateR
 
 	// Map response body to schema and populate Computed attribute values
 	plan.RootPassword = types.StringValue(cloudinstance.Password)
-	plan.Cloudid = types.StringValue(cloudinstance.Cloudid)
+	plan.ID = types.StringValue(cloudinstance.Cloudid)
 	plan.IP = types.StringValue(cloudinstance.Ipv4)
 	plan.CPU = types.StringValue(getCloudInstance.CPU)
 	plan.RAM = types.StringValue(getCloudInstance.RAM)
@@ -583,11 +582,11 @@ func (s *CloudInstanceResource) Read(ctx context.Context, req resource.ReadReque
 
 	tflog.Debug(ctx, "send get cloud instance request")
 	// Get refreshed cloud instance value from utho
-	cloudinstance, err := s.client.GetCloudInstance(ctx, state.Cloudid.ValueString())
+	cloudinstance, err := s.client.GetCloudInstance(ctx, state.ID.ValueString())
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error Reading utho cloud instance",
-			"Could not read utho cloud instance "+state.Cloudid.ValueString()+": "+err.Error(),
+			"Could not read utho cloud instance "+state.ID.ValueString()+": "+err.Error(),
 		)
 		return
 	}
@@ -602,10 +601,9 @@ func (s *CloudInstanceResource) Read(ctx context.Context, req resource.ReadReque
 	state.Name = types.StringValue(cloudinstance.Hostname)
 	state.Dcslug = types.StringValue(cloudinstance.Dclocation.Dc)
 	state.Image = types.StringValue(cloudinstance.Image.Image)
-	state.Firewall = types.StringValue(cloudinstance.Firewalls[0].ID)
 	state.Enablebackup = types.BoolValue(enableBackupMap[cloudinstance.Features.Backups])
 	state.Billingcycle = types.StringValue(cloudinstance.Billingcycle)
-	state.Cloudid = types.StringValue(cloudinstance.Cloudid)
+	state.ID = types.StringValue(cloudinstance.Cloudid)
 	state.IP = types.StringValue(cloudinstance.IP)
 	state.CPU = types.StringValue(cloudinstance.CPU)
 	state.RAM = types.StringValue(cloudinstance.RAM)
@@ -856,11 +854,11 @@ func (s *CloudInstanceResource) Delete(ctx context.Context, req resource.DeleteR
 	}
 	tflog.Debug(ctx, "send delete cloud instance request")
 	// delete cloud instance
-	err := s.client.DeleteCloudInstance(ctx, state.Cloudid.ValueString())
+	err := s.client.DeleteCloudInstance(ctx, state.ID.ValueString())
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error deleteing utho cloud instance",
-			"Could not delete utho cloud instance "+state.Cloudid.ValueString()+": "+err.Error(),
+			"Could not delete utho cloud instance "+state.ID.ValueString()+": "+err.Error(),
 		)
 		return
 	}
