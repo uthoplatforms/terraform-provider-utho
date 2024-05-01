@@ -8,7 +8,19 @@ require (
 	github.com/hashicorp/terraform-plugin-log v0.9.0
 )
 
-require gopkg.in/check.v1 v1.0.0-20180628173108-788fd7840127 // indirect
+require (
+	github.com/agext/levenshtein v1.2.2 // indirect
+	github.com/google/go-cmp v0.6.0 // indirect
+	github.com/hashicorp/go-cty v1.4.1-0.20200414143053-d3edf31b6320 // indirect
+	github.com/hashicorp/hcl/v2 v2.20.0 // indirect
+	github.com/hashicorp/logutils v1.0.0 // indirect
+	github.com/hashicorp/terraform-plugin-sdk/v2 v2.33.0 // indirect
+	github.com/mitchellh/go-wordwrap v1.0.0 // indirect
+	github.com/mitchellh/mapstructure v1.5.0 // indirect
+	github.com/vmihailenco/msgpack v4.0.4+incompatible // indirect
+	golang.org/x/tools v0.18.0 // indirect
+	google.golang.org/appengine v1.6.8 // indirect
+)
 
 require (
 	github.com/Kunde21/markdownfmt/v3 v3.1.0 // indirect
@@ -35,7 +47,8 @@ require (
 	github.com/hashicorp/hc-install v0.6.3 // indirect
 	github.com/hashicorp/terraform-exec v0.20.0 // indirect
 	github.com/hashicorp/terraform-json v0.21.0 // indirect
-	github.com/hashicorp/terraform-plugin-go v0.22.0 // indirect
+	github.com/hashicorp/terraform-plugin-go v0.22.0
+	github.com/hashicorp/terraform-plugin-testing v1.7.0
 	github.com/hashicorp/terraform-registry-address v0.2.3 // indirect
 	github.com/hashicorp/terraform-svchost v0.1.1 // indirect
 	github.com/hashicorp/yamux v0.1.1 // indirect
@@ -57,7 +70,7 @@ require (
 	github.com/yuin/goldmark v1.6.0 // indirect
 	github.com/yuin/goldmark-meta v1.1.0 // indirect
 	github.com/zclconf/go-cty v1.14.3 // indirect
-	golang.org/x/crypto v0.20.0 // indirect
+	golang.org/x/crypto v0.21.0 // indirect
 	golang.org/x/exp v0.0.0-20240222234643-814bf88cf225 // indirect
 	golang.org/x/mod v0.15.0 // indirect
 	golang.org/x/net v0.21.0 // indirect
