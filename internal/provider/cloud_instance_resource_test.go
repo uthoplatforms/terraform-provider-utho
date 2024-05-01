@@ -7,6 +7,8 @@ import (
 )
 
 func TestAccCloudInstanceResource(t *testing.T) {
+	resourceName := "utho_cloud_instance.example"
+
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
@@ -23,23 +25,23 @@ resource "utho_cloud_instance" "example" {
 }		  
 `,
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr("utho_cloud_instance.example", "name", "example-name"),
-					resource.TestCheckResourceAttr("utho_cloud_instance.example", "dclocation.dc", "inbangalore"),
-					resource.TestCheckResourceAttr("utho_cloud_instance.example", "enablebackup", "false"),
-					resource.TestCheckResourceAttr("utho_cloud_instance.example", "billingcycle", "hourly"),
-					resource.TestCheckResourceAttr("utho_cloud_instance.example", "image", "rocky-8.8-x86_64"),
+					resource.TestCheckResourceAttr(resourceName, "name", "example-name"),
+					resource.TestCheckResourceAttr(resourceName, "dclocation.dc", "inbangalore"),
+					resource.TestCheckResourceAttr(resourceName, "enablebackup", "false"),
+					resource.TestCheckResourceAttr(resourceName, "billingcycle", "hourly"),
+					resource.TestCheckResourceAttr(resourceName, "image", "rocky-8.8-x86_64"),
 
-					resource.TestCheckResourceAttrSet("utho_cloud_instance.example", "id"),
-					resource.TestCheckResourceAttrSet("utho_cloud_instance.example", "ip"),
-					resource.TestCheckResourceAttrSet("utho_cloud_instance.example", "billingcycle"),
-					resource.TestCheckResourceAttrSet("utho_cloud_instance.example", "disksize"),
-					resource.TestCheckResourceAttrSet("utho_cloud_instance.example", "public_network.0.ip_address"),
-					resource.TestCheckResourceAttrSet("utho_cloud_instance.example", "storages.0.id"),
-					resource.TestCheckResourceAttrSet("utho_cloud_instance.example", "vmcost"),
+					resource.TestCheckResourceAttrSet(resourceName, "id"),
+					resource.TestCheckResourceAttrSet(resourceName, "ip"),
+					resource.TestCheckResourceAttrSet(resourceName, "billingcycle"),
+					resource.TestCheckResourceAttrSet(resourceName, "disksize"),
+					resource.TestCheckResourceAttrSet(resourceName, "public_network.0.ip_address"),
+					resource.TestCheckResourceAttrSet(resourceName, "storages.0.id"),
+					resource.TestCheckResourceAttrSet(resourceName, "vmcost"),
 				),
 			},
 			{
-				ResourceName:      "utho_cloud_instance.example",
+				ResourceName:      resourceName,
 				ImportState:       true,
 				ImportStateVerify: true,
 

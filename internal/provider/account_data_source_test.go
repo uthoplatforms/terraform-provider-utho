@@ -7,17 +7,19 @@ import (
 )
 
 func TestAccAccountsDataSource(t *testing.T) {
+	resourceName := "data.utho_account.example"
+
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
 				Config: providerConfig + `data "utho_account" "example" {}`,
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr("data.utho_account.example", "user.verify", "1"),
+					resource.TestCheckResourceAttr(resourceName, "user.verify", "1"),
 
-					resource.TestCheckResourceAttrSet("data.utho_account.example", "user.id"),
-					resource.TestCheckResourceAttrSet("data.utho_account.fullname", "user.fullname"),
-					resource.TestCheckResourceAttrSet("data.utho_account.email", "user.email"),
+					resource.TestCheckResourceAttrSet(resourceName, "user.id"),
+					resource.TestCheckResourceAttrSet(resourceName, "user.fullname"),
+					resource.TestCheckResourceAttrSet(resourceName, "user.email"),
 				),
 			},
 		},
