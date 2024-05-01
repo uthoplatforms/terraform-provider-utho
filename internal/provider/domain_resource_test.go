@@ -7,7 +7,7 @@ import (
 )
 
 func TestAccDomainResource(t *testing.T) {
-	resourceName := "utho_dns_record.example"
+	resourceName := "utho_domain.example"
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
