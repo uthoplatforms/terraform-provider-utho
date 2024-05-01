@@ -3,8 +3,8 @@ package provider
 import (
 	"context"
 	"fmt"
+	"strings"
 
-	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
@@ -87,7 +87,7 @@ func (s *DnsRecordResource) Schema(_ context.Context, _ resource.SchemaRequest, 
 
 // Import using dns record as the attribute
 func (s *DnsRecordResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
-	resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)
+	// resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)
 }
 
 // Create a new resource.
@@ -124,11 +124,20 @@ func (s *DnsRecordResource) Create(ctx context.Context, req resource.CreateReque
 	}
 
 	// Map response body to schema and populate Computed attribute values
+	// remove domain value from hostname
+	hostnameStr := strings.Replace(plan.Hostname.ValueString(), plan.Domain.ValueString(), "", -1)
+	// remove tailed "."
+	length := len(hostnameStr)
+	hostname := hostnameStr
+	if hostnameStr[length-1:] == "." {
+		hostname = hostnameStr[:length-1]
+	}
+
 	plan = DnsRecordResourceModel{
 		ID:       types.StringValue(dnsRecord.ID),
 		Domain:   types.StringValue(plan.Domain.ValueString()),
 		Type:     types.StringValue(plan.Type.ValueString()),
-		Hostname: types.StringValue(plan.Hostname.ValueString()),
+		Hostname: types.StringValue(hostname),
 		Value:    types.StringValue(plan.Value.ValueString()),
 		TTL:      types.StringValue(plan.TTL.ValueString()),
 		Porttype: types.StringValue(plan.Porttype.ValueString()),
@@ -185,11 +194,21 @@ func (s *DnsRecordResource) Read(ctx context.Context, req resource.ReadRequest, 
 	}
 
 	// Overwrite items with refreshed state
+
+	// remove domain value from hostname
+	hostnameStr := strings.Replace(recordValues.Hostname, state.Domain.ValueString(), "", -1)
+	// remove tailed "."
+	length := len(hostnameStr)
+	hostname := hostnameStr
+	if hostnameStr[length-1:] == "." {
+		hostname = hostnameStr[:length-1]
+	}
+
 	state = DnsRecordResourceModel{
 		ID:       types.StringValue(recordValues.ID),
 		Domain:   types.StringValue(state.Domain.ValueString()),
 		Type:     types.StringValue(recordValues.Type),
-		Hostname: types.StringValue(recordValues.Hostname),
+		Hostname: types.StringValue(hostname),
 		Value:    types.StringValue(recordValues.Value),
 		TTL:      types.StringValue(recordValues.TTL),
 		Porttype: types.StringValue(state.Porttype.ValueString()),
