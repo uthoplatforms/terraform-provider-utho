@@ -8,7 +8,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
-	"github.com/uthoplatforms/terraform-provider-utho/api"
+	"github.com/uthoplatforms/utho-go/utho"
 )
 
 var (
@@ -17,7 +17,7 @@ var (
 )
 
 type ImagesDataSource struct {
-	client *api.Client
+	client utho.Client
 }
 type ImagesDataSourceModel struct {
 	Images []ImageDataSourceModel `tfsdk:"images"`
@@ -65,11 +65,11 @@ func (d *ImagesDataSource) Configure(_ context.Context, req datasource.Configure
 		return
 	}
 
-	client, ok := req.ProviderData.(*api.Client)
+	client, ok := req.ProviderData.(utho.Client)
 	if !ok {
 		resp.Diagnostics.AddError(
 			"Unexpected Images Data Source Configure Type",
-			fmt.Sprintf("Expected *api.Client, got: %T. Please report this issue to the provider developers.", req.ProviderData),
+			fmt.Sprintf("Expected utho.Client, got: %T. Please report this issue to the provider developers.", req.ProviderData),
 		)
 
 		return
@@ -81,7 +81,7 @@ func (d *ImagesDataSource) Configure(_ context.Context, req datasource.Configure
 func (d *ImagesDataSource) Read(ctx context.Context, req datasource.ReadRequest, resp *datasource.ReadResponse) {
 	tflog.Debug(ctx, "Preparing to read `item` data source")
 	// get images
-	images, err := d.client.GetImages(ctx)
+	images, err := d.client.CloudInstances().ListOsImages()
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Unable to list `images`",
@@ -91,7 +91,7 @@ func (d *ImagesDataSource) Read(ctx context.Context, req datasource.ReadRequest,
 	}
 	// Map response body to model
 	state := ImagesDataSourceModel{}
-	for _, image := range images.Images {
+	for _, image := range images {
 		resourceState := ImageDataSourceModel{
 			Distro:       types.StringValue(image.Distro),
 			Distribution: types.StringValue(image.Distribution),
