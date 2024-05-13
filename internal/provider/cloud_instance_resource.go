@@ -13,7 +13,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
-	"github.com/uthoplatforms/terraform-provider-utho/api"
+	"github.com/uthoplatforms/utho-go/utho"
 )
 
 // implement resource interfaces.
@@ -30,7 +30,7 @@ func NewCloudInstanceResource() resource.Resource {
 
 // CloudInstanceResource is the resource implementation.
 type CloudInstanceResource struct {
-	client *api.Client
+	client utho.Client
 }
 
 type CloudInstanceResourceModel struct {
@@ -118,7 +118,6 @@ type StoragesResourceModel struct {
 	DiskUsed  types.String `tfsdk:"disk_used"`
 	DiskFree  types.String `tfsdk:"disk_free"`
 	DiskUsedp types.String `tfsdk:"disk_usedp"`
-	CreatedAt types.String `tfsdk:"created_at"`
 	Bus       types.String `tfsdk:"bus"`
 	Type      types.String `tfsdk:"type"`
 }
@@ -146,11 +145,11 @@ func (d *CloudInstanceResource) Configure(_ context.Context, req resource.Config
 		return
 	}
 
-	client, ok := req.ProviderData.(*api.Client)
+	client, ok := req.ProviderData.(utho.Client)
 	if !ok {
 		resp.Diagnostics.AddError(
 			"Unexpected CloudInstance Data Source Configure Type",
-			fmt.Sprintf("Expected *api.Client, got: %T. Please report this issue to the provider developers.", req.ProviderData),
+			fmt.Sprintf("Expected utho.Client, got: %T. Please report this issue to the provider developers.", req.ProviderData),
 		)
 
 		return
@@ -256,7 +255,6 @@ func (s *CloudInstanceResource) Schema(_ context.Context, _ resource.SchemaReque
 					"disk_used":  schema.StringAttribute{Computed: true, Description: ""},
 					"disk_free":  schema.StringAttribute{Computed: true, Description: ""},
 					"disk_usedp": schema.StringAttribute{Computed: true, Description: ""},
-					"created_at": schema.StringAttribute{Computed: true, Description: ""},
 					"bus":        schema.StringAttribute{Computed: true, Description: ""},
 					"type":       schema.StringAttribute{Computed: true, Description: ""},
 				},
@@ -311,10 +309,10 @@ func (s *CloudInstanceResource) Create(ctx context.Context, req resource.CreateR
 		false: "false",
 		true:  "true",
 	}
-	hostName := []api.CloudHostname{}
-	hostName = append(hostName, api.CloudHostname{Hostname: plan.Name.ValueString()})
+	hostName := []utho.CloudHostname{}
+	hostName = append(hostName, utho.CloudHostname{Hostname: plan.Name.ValueString()})
 	// Generate API request body from plan
-	firewallRequest := api.CreateCloudInstanceArgs{
+	cloudinstanceRequest := utho.CreateCloudInstanceParams{
 		Dcslug:       plan.Dcslug.ValueString(),
 		Image:        plan.Image.ValueString(),
 		Planid:       plan.Planid.ValueString(),
@@ -330,7 +328,7 @@ func (s *CloudInstanceResource) Create(ctx context.Context, req resource.CreateR
 
 	tflog.Debug(ctx, "send create cloud instance request")
 
-	cloudinstance, err := s.client.CreateCloudInstance(ctx, firewallRequest)
+	cloudinstance, err := s.client.CloudInstances().Create(cloudinstanceRequest)
 
 	if err != nil {
 		resp.Diagnostics.AddError(
@@ -340,11 +338,11 @@ func (s *CloudInstanceResource) Create(ctx context.Context, req resource.CreateR
 		return
 	}
 
-	getCloudInstance, err := s.client.GetCloudInstance(ctx, plan.ID.ValueString())
+	getCloudInstance, err := s.client.CloudInstances().Read(cloudinstance.Cloudid)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error Reading utho cloud instance",
-			"Could not read utho cloud instance "+plan.ID.ValueString()+": "+err.Error(),
+			"Could not read utho cloud instance in create func"+plan.ID.ValueString()+": "+err.Error(),
 		)
 		return
 	}
@@ -399,7 +397,7 @@ func (s *CloudInstanceResource) Create(ctx context.Context, req resource.CreateR
 		return
 	}
 
-	// set state fro compex types
+	// set state fro complex types
 	// dclocatio
 	dclocationResourceModel := DclocationResourceModel{
 		Location: types.StringValue(getCloudInstance.Dclocation.Location),
@@ -413,6 +411,7 @@ func (s *CloudInstanceResource) Create(ctx context.Context, req resource.CreateR
 		return
 	}
 
+	// PrivateNetwork
 	var privateNetworkObjType = types.ObjectType{AttrTypes: map[string]attr.Type{
 		"noip":       types.Int64Type,
 		"ip_address": types.StringType,
@@ -449,6 +448,7 @@ func (s *CloudInstanceResource) Create(ctx context.Context, req resource.CreateR
 		return
 	}
 
+	// PublicNetwork
 	var publicNetworkObjType = types.ObjectType{AttrTypes: map[string]attr.Type{
 		"ip_address": types.StringType,
 		"netmask":    types.StringType,
@@ -479,13 +479,13 @@ func (s *CloudInstanceResource) Create(ctx context.Context, req resource.CreateR
 		return
 	}
 
+	// Storages
 	var storageObjType = types.ObjectType{AttrTypes: map[string]attr.Type{
 		"id":         types.StringType,
 		"size":       types.Int64Type,
 		"disk_used":  types.StringType,
 		"disk_free":  types.StringType,
 		"disk_usedp": types.StringType,
-		"created_at": types.StringType,
 		"bus":        types.StringType,
 		"type":       types.StringType,
 	}}
@@ -497,7 +497,6 @@ func (s *CloudInstanceResource) Create(ctx context.Context, req resource.CreateR
 			DiskUsed:  types.StringValue(v.DiskUsed),
 			DiskFree:  types.StringValue(v.DiskFree),
 			DiskUsedp: types.StringValue(v.DiskUsedp),
-			CreatedAt: types.StringValue(v.CreatedAt),
 			Bus:       types.StringValue(v.Bus),
 			Type:      types.StringValue(v.Type),
 		}
@@ -513,6 +512,7 @@ func (s *CloudInstanceResource) Create(ctx context.Context, req resource.CreateR
 		return
 	}
 
+	// Snapshots
 	var snapshotObjType = types.ObjectType{AttrTypes: map[string]attr.Type{
 		"id":         types.StringType,
 		"size":       types.StringType,
@@ -541,6 +541,7 @@ func (s *CloudInstanceResource) Create(ctx context.Context, req resource.CreateR
 		return
 	}
 
+	// Firewalls
 	var firewallObjType = types.ObjectType{AttrTypes: map[string]attr.Type{
 		"id":         types.StringType,
 		"created_at": types.StringType,
@@ -582,7 +583,7 @@ func (s *CloudInstanceResource) Read(ctx context.Context, req resource.ReadReque
 
 	tflog.Debug(ctx, "send get cloud instance request")
 	// Get refreshed cloud instance value from utho
-	cloudinstance, err := s.client.GetCloudInstance(ctx, state.ID.ValueString())
+	cloudinstance, err := s.client.CloudInstances().Read(state.ID.ValueString())
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error Reading utho cloud instance",
@@ -755,7 +756,6 @@ func (s *CloudInstanceResource) Read(ctx context.Context, req resource.ReadReque
 		"disk_used":  types.StringType,
 		"disk_free":  types.StringType,
 		"disk_usedp": types.StringType,
-		"created_at": types.StringType,
 		"bus":        types.StringType,
 		"type":       types.StringType,
 	}}
@@ -767,7 +767,6 @@ func (s *CloudInstanceResource) Read(ctx context.Context, req resource.ReadReque
 			DiskUsed:  types.StringValue(v.DiskUsed),
 			DiskFree:  types.StringValue(v.DiskFree),
 			DiskUsedp: types.StringValue(v.DiskUsedp),
-			CreatedAt: types.StringValue(v.CreatedAt),
 			Bus:       types.StringValue(v.Bus),
 			Type:      types.StringValue(v.Type),
 		}
@@ -854,7 +853,8 @@ func (s *CloudInstanceResource) Delete(ctx context.Context, req resource.DeleteR
 	}
 	tflog.Debug(ctx, "send delete cloud instance request")
 	// delete cloud instance
-	err := s.client.DeleteCloudInstance(ctx, state.ID.ValueString())
+	deleteCloudInstanceParams := utho.DeleteCloudInstanceParams{Confirm: "I am aware this action will delete data and server permanently"}
+	_, err := s.client.CloudInstances().Delete(state.ID.ValueString(), deleteCloudInstanceParams)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error deleteing utho cloud instance",
