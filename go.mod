@@ -1,11 +1,12 @@
 module github.com/uthoplatforms/terraform-provider-utho
 
-go 1.21
+go 1.21.6
 
 require (
 	github.com/hashicorp/terraform-plugin-docs v0.18.0
 	github.com/hashicorp/terraform-plugin-framework v1.6.0
 	github.com/hashicorp/terraform-plugin-log v0.9.0
+	github.com/uthoplatforms/utho-go v0.1.6
 )
 
 require (

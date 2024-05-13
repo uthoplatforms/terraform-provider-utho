@@ -8,7 +8,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
-	"github.com/uthoplatforms/terraform-provider-utho/api"
+	"github.com/uthoplatforms/utho-go/utho"
 )
 
 var (
@@ -17,68 +17,67 @@ var (
 )
 
 type AccountDataSource struct {
-	client *api.Client
+	client utho.Client
 }
 
-type (
-	AccountDataSourceModel struct {
-		User User `tfsdk:"user"`
-	}
+type AccountDataSourceModel struct {
+	User User `tfsdk:"user"`
+}
 
-	User struct {
-		ID                      types.String  `tfsdk:"id"`
-		Type                    types.String  `tfsdk:"type"`
-		Fullname                types.String  `tfsdk:"fullname"`
-		Company                 types.String  `tfsdk:"company"`
-		Email                   types.String  `tfsdk:"email"`
-		Address                 types.String  `tfsdk:"address"`
-		City                    types.String  `tfsdk:"city"`
-		State                   types.String  `tfsdk:"state"`
-		Country                 types.String  `tfsdk:"country"`
-		Postcode                types.String  `tfsdk:"postcode"`
-		Mobile                  types.String  `tfsdk:"mobile"`
-		Mobilecc                types.String  `tfsdk:"mobilecc"`
-		Gstnumber               types.String  `tfsdk:"gst_number"`
-		SupportneedTitle        types.String  `tfsdk:"supportneed_title"`
-		SupportneedUsecase      types.String  `tfsdk:"supportneed_usecase"`
-		SupportneedBusinesstype types.String  `tfsdk:"supportneed_business_type"`
-		SupportneedMonthlyspend types.String  `tfsdk:"supportneed_monthly_spend"`
-		SupportneedEmployeesize types.String  `tfsdk:"supportneed_employee_size"`
-		SupportFieldsRequired   types.String  `tfsdk:"support_fields_required"`
-		TwofaSettings           types.String  `tfsdk:"twofa_settings"`
-		Currencyprefix          types.String  `tfsdk:"currencyprefix"`
-		Currencyrate            types.String  `tfsdk:"currencyrate"`
-		Currency                types.String  `tfsdk:"currency"`
-		Credit                  types.Float64 `tfsdk:"credit"`
-		Availablecredit         types.Float64 `tfsdk:"availablecredit"`
-		Freecredit              types.Float64 `tfsdk:"freecredit"`
-		Currentusages           types.Float64 `tfsdk:"currentusages"`
-		Kyc                     types.String  `tfsdk:"kyc"`
-		SmsVerified             types.String  `tfsdk:"sms_verified"`
-		Verify                  types.String  `tfsdk:"verify"`
-		IsPartner               types.String  `tfsdk:"is_partner"`
-		Partnerid               types.String  `tfsdk:"partnerid"`
-		Twofa                   types.String  `tfsdk:"twofa"`
-		EmailVerified           types.String  `tfsdk:"email_verified"`
-		Cloudlimit              types.String  `tfsdk:"cloudlimit"`
-		K8SLimit                types.String  `tfsdk:"k8s_limit"`
-		IsReseller              types.String  `tfsdk:"is_reseller"`
-		Singleinvoice           types.String  `tfsdk:"singleinvoice"`
-		RazorpayCustomerid      types.String  `tfsdk:"razorpay_customerid"`
-		RazorpayOrderid         types.String  `tfsdk:"razorpay_orderid"`
-		StripeCustomer          types.String  `tfsdk:"stripe_customer"`
-		TotalCloudservers       types.String  `tfsdk:"total_cloudservers"`
-		Resources               []Resources   `tfsdk:"resources"`
-		Rvn                     types.String  `tfsdk:"rvn"`
-		CAdded                  types.String  `tfsdk:"c_added"`
-		RazorpaySub             types.String  `tfsdk:"razorpay_sub"`
-		AffiliateLoginid        types.String  `tfsdk:"affiliate_loginid"`
-	}
-	Resources struct {
-		Product types.String `tfsdk:"product"`
-		Count   types.String `tfsdk:"count"`
-	}
-)
+type User struct {
+	ID                      types.String  `tfsdk:"id"`
+	Type                    types.String  `tfsdk:"type"`
+	Fullname                types.String  `tfsdk:"fullname"`
+	Company                 types.String  `tfsdk:"company"`
+	Email                   types.String  `tfsdk:"email"`
+	Address                 types.String  `tfsdk:"address"`
+	City                    types.String  `tfsdk:"city"`
+	State                   types.String  `tfsdk:"state"`
+	Country                 types.String  `tfsdk:"country"`
+	Postcode                types.String  `tfsdk:"postcode"`
+	Mobile                  types.String  `tfsdk:"mobile"`
+	Mobilecc                types.String  `tfsdk:"mobilecc"`
+	Gstnumber               types.String  `tfsdk:"gst_number"`
+	SupportneedTitle        types.String  `tfsdk:"supportneed_title"`
+	SupportneedUsecase      types.String  `tfsdk:"supportneed_usecase"`
+	SupportneedBusinesstype types.String  `tfsdk:"supportneed_business_type"`
+	SupportneedMonthlyspend types.String  `tfsdk:"supportneed_monthly_spend"`
+	SupportneedEmployeesize types.String  `tfsdk:"supportneed_employee_size"`
+	SupportFieldsRequired   types.String  `tfsdk:"support_fields_required"`
+	TwofaSettings           types.String  `tfsdk:"twofa_settings"`
+	Currencyprefix          types.String  `tfsdk:"currencyprefix"`
+	Currencyrate            types.String  `tfsdk:"currencyrate"`
+	Currency                types.String  `tfsdk:"currency"`
+	Credit                  types.Float64 `tfsdk:"credit"`
+	Availablecredit         types.Float64 `tfsdk:"availablecredit"`
+	Freecredit              types.Float64 `tfsdk:"freecredit"`
+	Currentusages           types.Float64 `tfsdk:"currentusages"`
+	Kyc                     types.String  `tfsdk:"kyc"`
+	SmsVerified             types.String  `tfsdk:"sms_verified"`
+	Verify                  types.String  `tfsdk:"verify"`
+	IsPartner               types.String  `tfsdk:"is_partner"`
+	Partnerid               types.String  `tfsdk:"partnerid"`
+	Twofa                   types.String  `tfsdk:"twofa"`
+	EmailVerified           types.String  `tfsdk:"email_verified"`
+	Cloudlimit              types.String  `tfsdk:"cloudlimit"`
+	K8SLimit                types.String  `tfsdk:"k8s_limit"`
+	IsReseller              types.String  `tfsdk:"is_reseller"`
+	Singleinvoice           types.String  `tfsdk:"singleinvoice"`
+	RazorpayCustomerid      types.String  `tfsdk:"razorpay_customerid"`
+	RazorpayOrderid         types.String  `tfsdk:"razorpay_orderid"`
+	StripeCustomer          types.String  `tfsdk:"stripe_customer"`
+	TotalCloudservers       types.String  `tfsdk:"total_cloudservers"`
+	Resources               []Resources   `tfsdk:"resources"`
+	Rvn                     types.String  `tfsdk:"rvn"`
+	CAdded                  types.String  `tfsdk:"c_added"`
+	RazorpaySub             types.String  `tfsdk:"razorpay_sub"`
+	AffiliateLoginid        types.String  `tfsdk:"affiliate_loginid"`
+}
+
+type Resources struct {
+	Product types.String `tfsdk:"product"`
+	Count   types.String `tfsdk:"count"`
+}
 
 func NewAccountDataSource() datasource.DataSource {
 	return &AccountDataSource{}
@@ -163,11 +162,11 @@ func (d *AccountDataSource) Configure(_ context.Context, req datasource.Configur
 		return
 	}
 
-	client, ok := req.ProviderData.(*api.Client)
+	client, ok := req.ProviderData.(utho.Client)
 	if !ok {
 		resp.Diagnostics.AddError(
 			"Unexpected Account Data Source Configure Type",
-			fmt.Sprintf("Expected *api.Client, got: %T. Please report this issue to the provider developers.", req.ProviderData),
+			fmt.Sprintf("Expected utho.Client, got: %T. Please report this issue to the provider developers.", req.ProviderData),
 		)
 
 		return
@@ -179,8 +178,8 @@ func (d *AccountDataSource) Configure(_ context.Context, req datasource.Configur
 func (d *AccountDataSource) Read(ctx context.Context, req datasource.ReadRequest, resp *datasource.ReadResponse) {
 	tflog.Debug(ctx, "Preparing to read `item` data source")
 	// get account
-	account, err := d.client.GetAccount(ctx)
-	userInfo := account.User
+	// account, err := d.client.GetAccount(ctx)
+	user, err := d.client.Account().Read()
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Unable to list `accounts`",
@@ -191,55 +190,55 @@ func (d *AccountDataSource) Read(ctx context.Context, req datasource.ReadRequest
 	// Map response body to model
 	state := AccountDataSourceModel{
 		User: User{
-			ID:                      types.StringValue(userInfo.ID),
-			Type:                    types.StringValue(userInfo.Type),
-			Fullname:                types.StringValue(userInfo.Fullname),
-			Company:                 types.StringValue(userInfo.Company),
-			Email:                   types.StringValue(userInfo.Email),
-			Address:                 types.StringValue(userInfo.Address),
-			City:                    types.StringValue(userInfo.City),
-			State:                   types.StringValue(userInfo.State),
-			Country:                 types.StringValue(userInfo.Country),
-			Postcode:                types.StringValue(userInfo.Postcode),
-			Mobile:                  types.StringValue(userInfo.Mobile),
-			Mobilecc:                types.StringValue(userInfo.Mobilecc),
-			Gstnumber:               types.StringValue(userInfo.Gstnumber),
-			SupportneedTitle:        types.StringValue(userInfo.SupportneedTitle),
-			SupportneedUsecase:      types.StringValue(userInfo.SupportneedUsecase),
-			SupportneedBusinesstype: types.StringValue(userInfo.SupportneedBusinesstype),
-			SupportneedMonthlyspend: types.StringValue(userInfo.SupportneedMonthlyspend),
-			SupportneedEmployeesize: types.StringValue(userInfo.SupportneedEmployeesize),
-			SupportFieldsRequired:   types.StringValue(userInfo.SupportFieldsRequired),
-			TwofaSettings:           types.StringValue(userInfo.TwofaSettings),
-			Currencyprefix:          types.StringValue(userInfo.Currencyprefix),
-			Currencyrate:            types.StringValue(userInfo.Currencyrate),
-			Currency:                types.StringValue(userInfo.Currency),
-			Credit:                  types.Float64Value(userInfo.Credit),
-			Availablecredit:         types.Float64Value(userInfo.Availablecredit),
-			Freecredit:              types.Float64Value(userInfo.Freecredit),
-			Currentusages:           types.Float64Value(userInfo.Currentusages),
-			Kyc:                     types.StringValue(userInfo.Kyc),
-			SmsVerified:             types.StringValue(userInfo.SmsVerified),
-			Verify:                  types.StringValue(userInfo.Verify),
-			IsPartner:               types.StringValue(userInfo.IsPartner),
-			Partnerid:               types.StringValue(userInfo.Partnerid),
-			Twofa:                   types.StringValue(userInfo.Twofa),
-			EmailVerified:           types.StringValue(userInfo.EmailVerified),
-			Cloudlimit:              types.StringValue(userInfo.Cloudlimit),
-			K8SLimit:                types.StringValue(userInfo.K8SLimit),
-			IsReseller:              types.StringValue(userInfo.IsReseller),
-			Singleinvoice:           types.StringValue(userInfo.Singleinvoice),
-			RazorpayCustomerid:      types.StringValue(userInfo.RazorpayCustomerid),
-			RazorpayOrderid:         types.StringValue(userInfo.RazorpayOrderid),
-			StripeCustomer:          types.StringValue(userInfo.StripeCustomer),
-			TotalCloudservers:       types.StringValue(userInfo.TotalCloudservers),
-			Rvn:                     types.StringValue(userInfo.Rvn),
-			CAdded:                  types.StringValue(userInfo.CAdded),
-			RazorpaySub:             types.StringValue(userInfo.RazorpaySub),
-			AffiliateLoginid:        types.StringValue(userInfo.AffiliateLoginid),
+			ID:                      types.StringValue(user.ID),
+			Type:                    types.StringValue(user.Type),
+			Fullname:                types.StringValue(user.Fullname),
+			Company:                 types.StringValue(user.Company),
+			Email:                   types.StringValue(user.Email),
+			Address:                 types.StringValue(user.Address),
+			City:                    types.StringValue(user.City),
+			State:                   types.StringValue(user.State),
+			Country:                 types.StringValue(user.Country),
+			Postcode:                types.StringValue(user.Postcode),
+			Mobile:                  types.StringValue(user.Mobile),
+			Mobilecc:                types.StringValue(user.Mobilecc),
+			Gstnumber:               types.StringValue(user.Gstnumber),
+			SupportneedTitle:        types.StringValue(user.SupportneedTitle),
+			SupportneedUsecase:      types.StringValue(user.SupportneedUsecase),
+			SupportneedBusinesstype: types.StringValue(user.SupportneedBusinesstype),
+			SupportneedMonthlyspend: types.StringValue(user.SupportneedMonthlyspend),
+			SupportneedEmployeesize: types.StringValue(user.SupportneedEmployeesize),
+			SupportFieldsRequired:   types.StringValue(user.SupportFieldsRequired),
+			TwofaSettings:           types.StringValue(user.TwofaSettings),
+			Currencyprefix:          types.StringValue(user.Currencyprefix),
+			Currencyrate:            types.StringValue(user.Currencyrate),
+			Currency:                types.StringValue(user.Currency),
+			Credit:                  types.Float64Value(user.Credit),
+			Availablecredit:         types.Float64Value(user.Availablecredit),
+			Freecredit:              types.Float64Value(user.Freecredit),
+			Currentusages:           types.Float64Value(user.Currentusages),
+			Kyc:                     types.StringValue(user.Kyc),
+			SmsVerified:             types.StringValue(user.SmsVerified),
+			Verify:                  types.StringValue(user.Verify),
+			IsPartner:               types.StringValue(user.IsPartner),
+			Partnerid:               types.StringValue(user.Partnerid),
+			Twofa:                   types.StringValue(user.Twofa),
+			EmailVerified:           types.StringValue(user.EmailVerified),
+			Cloudlimit:              types.StringValue(user.Cloudlimit),
+			K8SLimit:                types.StringValue(user.K8SLimit),
+			IsReseller:              types.StringValue(user.IsReseller),
+			Singleinvoice:           types.StringValue(user.Singleinvoice),
+			RazorpayCustomerid:      types.StringValue(user.RazorpayCustomerid),
+			RazorpayOrderid:         types.StringValue(user.RazorpayOrderid),
+			StripeCustomer:          types.StringValue(user.StripeCustomer),
+			TotalCloudservers:       types.StringValue(user.TotalCloudservers),
+			Rvn:                     types.StringValue(user.Rvn),
+			CAdded:                  types.StringValue(user.CAdded),
+			RazorpaySub:             types.StringValue(user.RazorpaySub),
+			AffiliateLoginid:        types.StringValue(user.AffiliateLoginid),
 		},
 	}
-	for _, resource := range userInfo.Resources {
+	for _, resource := range user.Resources {
 		resourceState := Resources{
 			Product: types.StringValue(resource.Product),
 			Count:   types.StringValue(resource.Count),
