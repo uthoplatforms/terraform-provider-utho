@@ -11,7 +11,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
-	"github.com/uthoplatforms/terraform-provider-utho/api"
+	"github.com/uthoplatforms/utho-go/utho"
 )
 
 // implement resource interfaces.
@@ -28,7 +28,7 @@ func NewFirewallResource() resource.Resource {
 
 // FirewallResource is the resource implementation.
 type FirewallResource struct {
-	client *api.Client
+	client utho.Client
 }
 
 type FirewallResourceModel struct {
@@ -37,6 +37,7 @@ type FirewallResourceModel struct {
 	CreatedAt    types.String `tfsdk:"created_at"`
 	Rulecount    types.String `tfsdk:"rulecount"`
 	Serverscount types.String `tfsdk:"serverscount"`
+	// Rules        []FirewallRuleResourceModel `tfsdk:"rules"`
 }
 
 // Metadata returns the resource type name.
@@ -50,11 +51,11 @@ func (d *FirewallResource) Configure(_ context.Context, req resource.ConfigureRe
 		return
 	}
 
-	client, ok := req.ProviderData.(*api.Client)
+	client, ok := req.ProviderData.(utho.Client)
 	if !ok {
 		resp.Diagnostics.AddError(
 			"Unexpected Firewall Data Source Configure Type",
-			fmt.Sprintf("Expected *api.Client, got: %T. Please report this issue to the provider developers.", req.ProviderData),
+			fmt.Sprintf("Expected utho.Client, got: %T. Please report this issue to the provider developers.", req.ProviderData),
 		)
 
 		return
@@ -67,16 +68,36 @@ func (s *FirewallResource) Schema(_ context.Context, _ resource.SchemaRequest, r
 	resp.Schema = schema.Schema{
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{Computed: true, Description: "id"},
-			"name": schema.StringAttribute{
-				Required: true,
-				PlanModifiers: []planmodifier.String{
-					stringplanmodifier.RequiresReplace(),
-				},
-				Description: "Name of the firewall",
+			"name": schema.StringAttribute{Required: true, Description: "Name of the firewall",
+				PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()},
 			},
 			"created_at":   schema.StringAttribute{Computed: true, Description: "Created At"},
 			"rulecount":    schema.StringAttribute{Computed: true, Description: "Rule Count"},
 			"serverscount": schema.StringAttribute{Computed: true, Description: "Servers Count"},
+			// "rules": schema.ListNestedAttribute{
+			// 	Optional:    true,
+			// 	Description: "firewall rules",
+			// 	NestedObject: schema.NestedAttributeObject{
+			// 		Attributes: map[string]schema.Attribute{
+			// 			"id": schema.StringAttribute{Computed: true, Description: "id"},
+			// 			"type": schema.StringAttribute{Required: true, Description: "type",
+			// 				PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()},
+			// 			},
+			// 			"protocol": schema.StringAttribute{Required: true, Description: "protocol",
+			// 				PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()},
+			// 			},
+			// 			"port": schema.StringAttribute{Required: true, Description: "port",
+			// 				PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()},
+			// 			},
+			// 			"addresses": schema.StringAttribute{Required: true, Description: "addresses",
+			// 				PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()},
+			// 			},
+			// 			"firewallid": schema.StringAttribute{Computed: true, Description: "firewallid"},
+			// 			"service":    schema.StringAttribute{Computed: true, Description: "service"},
+			// 			"note":       schema.StringAttribute{Computed: true, Description: "note"},
+			// 		},
+			// 	},
+			// },
 		},
 	}
 }
@@ -98,11 +119,13 @@ func (s *FirewallResource) Create(ctx context.Context, req resource.CreateReques
 	}
 
 	// Generate API request body from plan
-	firewallRequest := api.FirewallRequest{
+	firewallRequest := utho.CreateFirewallParams{
 		Name: plan.Name.ValueString(),
 	}
+
 	tflog.Debug(ctx, "send create firewall request")
-	firewall, err := s.client.CreateFirewall(ctx, firewallRequest)
+	fw, err := s.client.Firewall().Create(firewallRequest)
+	// fw, err := s.client.CreateFirewall(ctx, firewallRequest)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error creating firewall",
@@ -111,13 +134,37 @@ func (s *FirewallResource) Create(ctx context.Context, req resource.CreateReques
 		return
 	}
 
+	// fireWall, err := s.client.Firewall().Read(fw.ID)
+	// if err != nil {
+	// 	resp.Diagnostics.AddError(
+	// 		"Error Reading utho target group",
+	// 		"Could not read utho firewall "+fw.ID,
+	// 	)
+	// 	return
+	// }
+
 	// Map response body to schema and populate Computed attribute values
+	// var firewallrulesResourceModel []FirewallRuleResourceModel
+	// for _, rule := range fireWall.Rules {
+	// 	firewallRuleResourceModel := FirewallRuleResourceModel{
+	// 		ID:         types.StringValue(rule.ID),
+	// 		Firewallid: types.StringValue(rule.Firewallid),
+	// 		Type:       types.StringValue(rule.Type),
+	// 		Service:    types.StringValue(rule.Service),
+	// 		Protocol:   types.StringValue(rule.Protocol),
+	// 		Port:       types.StringValue(rule.Port),
+	// 		Addresses:  types.StringValue(rule.Addresses),
+	// 	}
+	// 	firewallrulesResourceModel = append(firewallrulesResourceModel, firewallRuleResourceModel)
+	// }
+
 	plan = FirewallResourceModel{
-		ID:           types.StringValue(firewall.ID),
+		ID:           types.StringValue(fw.ID),
 		Name:         types.StringValue(plan.Name.ValueString()),
 		CreatedAt:    types.StringValue(plan.CreatedAt.ValueString()),
 		Rulecount:    types.StringValue(plan.Rulecount.ValueString()),
 		Serverscount: types.StringValue(plan.Serverscount.ValueString()),
+		// Rules:        firewallrulesResourceModel,
 	}
 
 	// Set state to fully populated data
@@ -143,7 +190,7 @@ func (s *FirewallResource) Read(ctx context.Context, req resource.ReadRequest, r
 
 	tflog.Debug(ctx, "send get firewall request")
 	// Get refreshed firewall value from utho
-	firewall, err := s.client.GetFirewall(ctx, state.ID.ValueString())
+	firewall, err := s.client.Firewall().Read(state.ID.ValueString())
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error Reading utho firewall",
@@ -186,7 +233,7 @@ func (s *FirewallResource) Delete(ctx context.Context, req resource.DeleteReques
 	}
 	tflog.Debug(ctx, "send delete firewall request")
 	// delete firewall
-	err := s.client.DeleteFirewall(ctx, state.ID.ValueString())
+	_, err := s.client.Firewall().Delete(state.ID.ValueString())
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error deleteing utho firewall",
