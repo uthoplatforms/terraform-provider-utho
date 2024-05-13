@@ -11,7 +11,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
-	"github.com/uthoplatforms/terraform-provider-utho/api"
+	"github.com/uthoplatforms/utho-go/utho"
 )
 
 // implement resource interfaces.
@@ -28,7 +28,7 @@ func NewDnsRecordResource() resource.Resource {
 
 // DnsRecordResource is the resource implementation.
 type DnsRecordResource struct {
-	client *api.Client
+	client utho.Client
 }
 
 type DnsRecordResourceModel struct {
@@ -55,11 +55,11 @@ func (d *DnsRecordResource) Configure(_ context.Context, req resource.ConfigureR
 		return
 	}
 
-	client, ok := req.ProviderData.(*api.Client)
+	client, ok := req.ProviderData.(utho.Client)
 	if !ok {
 		resp.Diagnostics.AddError(
 			"Unexpected DnsRecord Data Source Configure Type",
-			fmt.Sprintf("Expected *api.Client, got: %T. Please report this issue to the provider developers.", req.ProviderData),
+			fmt.Sprintf("Expected utho.Client, got: %T. Please report this issue to the provider developers.", req.ProviderData),
 		)
 
 		return
@@ -102,7 +102,7 @@ func (s *DnsRecordResource) Create(ctx context.Context, req resource.CreateReque
 	}
 
 	// Generate API request body from plan
-	dnsRecordRequest := api.DnsRecordRequest{
+	dnsRecordRequest := utho.CreateDnsRecordParams{
 		Domain:   plan.Domain.ValueString(),
 		Type:     plan.Type.ValueString(),
 		Hostname: plan.Hostname.ValueString(),
@@ -114,7 +114,7 @@ func (s *DnsRecordResource) Create(ctx context.Context, req resource.CreateReque
 		Wight:    plan.Wight.ValueString(),
 	}
 	tflog.Debug(ctx, "send create dns record request")
-	dnsRecord, err := s.client.CreateDnsRecord(ctx, dnsRecordRequest)
+	dnsRecord, err := s.client.Domain().CreateDnsRecord(dnsRecordRequest)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error creating dns record",
@@ -169,7 +169,7 @@ func (s *DnsRecordResource) Read(ctx context.Context, req resource.ReadRequest, 
 
 	tflog.Debug(ctx, "send get dns record request")
 	// Get refreshed dns record value from utho
-	domain, err := s.client.GetDomain(ctx, state.Domain.ValueString())
+	domain, err := s.client.Domain().ReadDomain(state.Domain.ValueString())
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error Reading utho dns record",
@@ -179,7 +179,7 @@ func (s *DnsRecordResource) Read(ctx context.Context, req resource.ReadRequest, 
 	}
 
 	// get record id
-	recordValues := api.Record{}
+	recordValues := utho.DnsRecord{}
 	for _, record := range domain.Records {
 		if state.ID.ValueString() == record.ID {
 			recordValues = record
@@ -242,7 +242,7 @@ func (s *DnsRecordResource) Delete(ctx context.Context, req resource.DeleteReque
 	}
 	tflog.Debug(ctx, "send delete dns record request")
 	// delete dns record
-	err := s.client.DeleteDnsRecord(ctx, state.Domain.ValueString(), state.ID.ValueString())
+	_, err := s.client.Domain().DeleteDnsRecord(state.Domain.ValueString(), state.ID.ValueString())
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error deleteing utho dns record",

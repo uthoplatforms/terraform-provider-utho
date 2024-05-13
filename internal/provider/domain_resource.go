@@ -11,7 +11,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
-	"github.com/uthoplatforms/terraform-provider-utho/api"
+	"github.com/uthoplatforms/utho-go/utho"
 )
 
 // implement resource interfaces.
@@ -29,7 +29,7 @@ func NewDomainResource() resource.Resource {
 // DomainResource is the resource implementation.
 type (
 	DomainResource struct {
-		client *api.Client
+		client utho.Client
 	}
 
 	// DomainResource is the model implementation.
@@ -50,11 +50,11 @@ func (d *DomainResource) Configure(_ context.Context, req resource.ConfigureRequ
 		return
 	}
 
-	client, ok := req.ProviderData.(*api.Client)
+	client, ok := req.ProviderData.(utho.Client)
 	if !ok {
 		resp.Diagnostics.AddError(
 			"Unexpected Domain Data Source Configure Type",
-			fmt.Sprintf("Expected *api.Client, got: %T. Please report this issue to the provider developers.", req.ProviderData),
+			fmt.Sprintf("Expected utho.Client, got: %T. Please report this issue to the provider developers.", req.ProviderData),
 		)
 
 		return
@@ -95,11 +95,11 @@ func (s *DomainResource) Create(ctx context.Context, req resource.CreateRequest,
 	}
 
 	// Generate API request body from plan
-	domainRequest := api.DomainRequest{
+	domainRequest := utho.CreateDomainParams{
 		Domain: plan.Domain.ValueString(),
 	}
 	tflog.Debug(ctx, "send create domain request")
-	domain, err := s.client.CreateDomain(ctx, domainRequest)
+	_, err := s.client.Domain().CreateDomain(domainRequest)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error creating domain",
@@ -110,8 +110,7 @@ func (s *DomainResource) Create(ctx context.Context, req resource.CreateRequest,
 
 	// Map response body to schema and populate Computed attribute values
 	plan = DomainResourceModel{
-		Domain:  types.StringValue(domain.Domain),
-		Nspoint: types.StringValue(domain.Nspoint),
+		Domain: types.StringValue(plan.Domain.ValueString()),
 	}
 
 	// Set state to fully populated data
@@ -137,7 +136,7 @@ func (s *DomainResource) Read(ctx context.Context, req resource.ReadRequest, res
 
 	tflog.Debug(ctx, "send get domain request")
 	// Get refreshed domain value from utho
-	domain, err := s.client.GetDomain(ctx, state.Domain.ValueString())
+	domain, err := s.client.Domain().ReadDomain(state.Domain.ValueString())
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error Reading utho domain",
@@ -177,7 +176,7 @@ func (s *DomainResource) Delete(ctx context.Context, req resource.DeleteRequest,
 	}
 	tflog.Debug(ctx, "send delete domain request")
 	// delete domain
-	err := s.client.DeleteDomain(ctx, state.Domain.ValueString())
+	_, err := s.client.Domain().DeleteDomain(state.Domain.ValueString())
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error deleteing utho domain",
