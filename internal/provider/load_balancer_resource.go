@@ -11,7 +11,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
-	"github.com/uthoplatforms/terraform-provider-utho/api"
+	"github.com/uthoplatforms/utho-go/utho"
 )
 
 // implement resource interfaces.
@@ -29,7 +29,7 @@ func NewLoadbalancerResource() resource.Resource {
 // LoadbalancerResource is the resource implementation.
 type (
 	LoadbalancerResource struct {
-		client *api.Client
+		client utho.Client
 	}
 
 	// LoadbalancerResourceModel is the model implementation.
@@ -75,11 +75,11 @@ func (d *LoadbalancerResource) Configure(_ context.Context, req resource.Configu
 		return
 	}
 
-	client, ok := req.ProviderData.(*api.Client)
+	client, ok := req.ProviderData.(utho.Client)
 	if !ok {
 		resp.Diagnostics.AddError(
 			"Unexpected Loadbalancer Data Source Configure Type",
-			fmt.Sprintf("Expected *api.Client, got: %T. Please report this issue to the provider developers.", req.ProviderData),
+			fmt.Sprintf("Expected utho.Client, got: %T. Please report this issue to the provider developers.", req.ProviderData),
 		)
 
 		return
@@ -146,14 +146,14 @@ func (s *LoadbalancerResource) Create(ctx context.Context, req resource.CreateRe
 	}
 
 	// Generate API request body from plan
-	loadbalancerRequest := api.LoadbalancerRequest{
+	loadbalancerRequest := utho.CreateLoadbalancerParams{
 		Dcslug: plan.Dcslug.ValueString(),
 		Type:   plan.Type.ValueString(),
 		Name:   plan.Name.ValueString(),
 	}
 	tflog.Debug(ctx, "send create loadbalancer request")
 
-	createloadbalancer, err := s.client.CreateLoadbalancer(ctx, loadbalancerRequest)
+	createloadbalancer, err := s.client.Loadbalancers().Create(loadbalancerRequest)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error creating loadbalancer",
@@ -162,7 +162,7 @@ func (s *LoadbalancerResource) Create(ctx context.Context, req resource.CreateRe
 		return
 	}
 
-	loadbalancer, err := s.client.GetLoadbalancer(ctx, createloadbalancer.Loadbalancerid)
+	loadbalancer, err := s.client.Loadbalancers().Read(createloadbalancer.Loadbalancerid)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error creating loadbalancer",
@@ -213,7 +213,7 @@ func (s *LoadbalancerResource) Read(ctx context.Context, req resource.ReadReques
 
 	tflog.Debug(ctx, "send get loadbalancer request")
 	// Get refreshed loadbalancer value from utho
-	loadbalancer, err := s.client.GetLoadbalancer(ctx, state.ID.ValueString())
+	loadbalancer, err := s.client.Loadbalancers().Read(state.ID.ValueString())
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error Reading utho loadbalancer",
@@ -256,22 +256,22 @@ func (s *LoadbalancerResource) Update(ctx context.Context, req resource.UpdateRe
 
 // Delete deletes the resource and removes the Terraform state on success.
 func (s *LoadbalancerResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
-	// tflog.Debug(ctx, "delete loadbalancer")
-	// // Get current state
-	// var state LoadbalancerResourceModel
-	// diags := req.State.Get(ctx, &state)
-	// resp.Diagnostics.Append(diags...)
-	// if resp.Diagnostics.HasError() {
-	// 	return
-	// }
-	// tflog.Debug(ctx, "send delete loadbalancer request")
-	// // delete loadbalancer
-	// err := s.client.DeleteLoadbalancer(ctx, state.ID.ValueString())
-	// if err != nil {
-	// 	resp.Diagnostics.AddError(
-	// 		"Error deleteing utho loadbalancer",
-	// 		"Could not delete utho loadbalancer "+state.ID.ValueString()+": "+err.Error(),
-	// 	)
-	// 	return
-	// }
+	tflog.Debug(ctx, "delete loadbalancer")
+	// Get current state
+	var state LoadbalancerResourceModel
+	diags := req.State.Get(ctx, &state)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+	tflog.Debug(ctx, "send delete loadbalancer request")
+	// delete loadbalancer
+	_, err := s.client.Loadbalancers().Delete(state.ID.ValueString())
+	if err != nil {
+		resp.Diagnostics.AddError(
+			"Error deleteing utho loadbalancer",
+			"Could not delete utho loadbalancer "+state.ID.ValueString()+": "+err.Error(),
+		)
+		return
+	}
 }
