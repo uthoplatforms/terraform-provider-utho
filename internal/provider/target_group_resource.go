@@ -3,7 +3,6 @@ package provider
 import (
 	"context"
 	"fmt"
-	"strconv"
 
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
@@ -12,7 +11,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
-	"github.com/uthoplatforms/terraform-provider-utho/api"
+	"github.com/uthoplatforms/utho-go/utho"
 )
 
 // implement resource interfaces.
@@ -29,7 +28,7 @@ func NewTargetGroupResource() resource.Resource {
 
 // TargetGroupResource is the resource implementation.
 type TargetGroupResource struct {
-	client *api.Client
+	client utho.Client
 }
 
 type TargetGroupResourceModel struct {
@@ -72,11 +71,11 @@ func (d *TargetGroupResource) Configure(_ context.Context, req resource.Configur
 		return
 	}
 
-	client, ok := req.ProviderData.(*api.Client)
+	client, ok := req.ProviderData.(utho.Client)
 	if !ok {
 		resp.Diagnostics.AddError(
 			"Unexpected TargetGroup Data Source Configure Type",
-			fmt.Sprintf("Expected *api.Client, got: %T. Please report this issue to the provider developers.", req.ProviderData),
+			fmt.Sprintf("Expected utho.Client, got: %T. Please report this issue to the provider developers.", req.ProviderData),
 		)
 
 		return
@@ -105,6 +104,7 @@ func (s *TargetGroupResource) Schema(_ context.Context, _ resource.SchemaRequest
 				Description: "targets",
 				NestedObject: schema.NestedAttributeObject{
 					Attributes: map[string]schema.Attribute{
+						"id":                   schema.StringAttribute{Computed: true, Description: "Id"},
 						"ip":                   schema.StringAttribute{Required: true, Description: "Target Ip", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
 						"backend_port":         schema.StringAttribute{Required: true, Description: "Backend Port", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
 						"backend_protocol":     schema.StringAttribute{Required: true, Description: "Backend Protocol", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
@@ -115,7 +115,6 @@ func (s *TargetGroupResource) Schema(_ context.Context, _ resource.SchemaRequest
 						"kubernetes_clusterid": schema.StringAttribute{Computed: true, Description: "Kubernetes Clusterid"},
 						"targetgroup_id":       schema.StringAttribute{Computed: true, Description: "Targetgroup Id"},
 						"frontend_id":          schema.StringAttribute{Computed: true, Description: "Frontend Id"},
-						"id":                   schema.StringAttribute{Computed: true, Description: "Id"},
 					},
 				},
 			},
@@ -139,16 +138,8 @@ func (s *TargetGroupResource) Create(ctx context.Context, req resource.CreateReq
 		return
 	}
 
-	var targets []api.TargetArgs
-	for _, target := range plan.Targets {
-		targets = append(targets, api.TargetArgs{
-			IP:              target.IP.ValueString(),
-			BackendPort:     target.BackendPort.ValueString(),
-			BackendProtocol: target.BackendProtocol.ValueString(),
-		})
-	}
 	// Generate API request body from plan
-	targetGroupRequest := api.CreateTargetGroupArgs{
+	targetGroupRequest := utho.CreateTargetGroupParams{
 		Name:                plan.Name.ValueString(),
 		Protocol:            plan.Protocol.ValueString(),
 		Port:                plan.Port.ValueString(),
@@ -158,10 +149,9 @@ func (s *TargetGroupResource) Create(ctx context.Context, req resource.CreateReq
 		HealthCheckTimeout:  plan.HealthCheckTimeout.ValueString(),
 		HealthyThreshold:    plan.HealthyThreshold.ValueString(),
 		UnhealthyThreshold:  plan.UnhealthyThreshold.ValueString(),
-		Targets:             targets,
 	}
 	tflog.Debug(ctx, "send create target group request")
-	createTargetGroupResponse, err := s.client.CreateTargetGroup(ctx, targetGroupRequest)
+	createTargetGroupResponse, err := s.client.TargetGroup().Create(targetGroupRequest)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error creating target group",
@@ -170,11 +160,31 @@ func (s *TargetGroupResource) Create(ctx context.Context, req resource.CreateReq
 		return
 	}
 
-	targetGroup, err := s.client.GetTargetGroup(ctx, strconv.Itoa(createTargetGroupResponse.ID))
+	var targets []string
+	for _, target := range plan.Targets {
+		createTargetGroupTargetParams := utho.CreateTargetGroupTargetParams{
+			TargetGroupId:   createTargetGroupResponse.ID,
+			IP:              target.IP.ValueString(),
+			BackendPort:     target.BackendPort.ValueString(),
+			BackendProtocol: target.BackendProtocol.ValueString(),
+			Cloudid:         target.Cloudid.ValueString(),
+		}
+		createTargetsRes, err := s.client.TargetGroup().CreateTarget(createTargetGroupTargetParams)
+		if err != nil {
+			resp.Diagnostics.AddError(
+				"Error creating target group",
+				"Could not create target group target, unexpected error: "+err.Error(),
+			)
+			return
+		}
+		targets = append(targets, createTargetsRes.ID)
+	}
+
+	targetGroup, err := s.client.TargetGroup().Read(createTargetGroupResponse.ID)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error Reading utho target group",
-			"Could not read utho target group "+strconv.Itoa(createTargetGroupResponse.ID)+": "+err.Error(),
+			"Could not read utho target group "+createTargetGroupResponse.ID+": "+err.Error(),
 		)
 		return
 	}
@@ -199,7 +209,7 @@ func (s *TargetGroupResource) Create(ctx context.Context, req resource.CreateReq
 	}
 
 	plan = TargetGroupResourceModel{
-		ID:                  types.StringValue(strconv.Itoa(createTargetGroupResponse.ID)),
+		ID:                  types.StringValue(createTargetGroupResponse.ID),
 		Name:                types.StringValue(targetGroup.Name),
 		Port:                types.StringValue(targetGroup.Port),
 		Protocol:            types.StringValue(targetGroup.Protocol),
@@ -237,7 +247,7 @@ func (s *TargetGroupResource) Read(ctx context.Context, req resource.ReadRequest
 
 	tflog.Debug(ctx, "send get target group request")
 	// Get refreshed target group value from utho
-	targetGroup, err := s.client.GetTargetGroup(ctx, state.ID.ValueString())
+	targetGroup, err := s.client.TargetGroup().Read(state.ID.ValueString())
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error Reading utho target group",
@@ -306,7 +316,7 @@ func (s *TargetGroupResource) Delete(ctx context.Context, req resource.DeleteReq
 	}
 	tflog.Debug(ctx, "send delete target group request")
 	// delete target group
-	err := s.client.DeleteTargetGroup(ctx, state.ID.ValueString(), state.Name.ValueString())
+	_, err := s.client.TargetGroup().Delete(state.ID.ValueString(), state.Name.ValueString())
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error deleteing utho target group",

@@ -8,7 +8,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
-	"github.com/uthoplatforms/terraform-provider-utho/api"
+	"github.com/uthoplatforms/utho-go/utho"
 )
 
 var (
@@ -17,7 +17,7 @@ var (
 )
 
 type ObjectStoragePlanDataSource struct {
-	client *api.Client
+	client utho.Client
 }
 type ObjectStoragePlanDataSourceModel struct {
 	Pricing []PricingDataSourceModel `tfsdk:"pricing"`
@@ -83,11 +83,11 @@ func (d *ObjectStoragePlanDataSource) Configure(_ context.Context, req datasourc
 		return
 	}
 
-	client, ok := req.ProviderData.(*api.Client)
+	client, ok := req.ProviderData.(utho.Client)
 	if !ok {
 		resp.Diagnostics.AddError(
 			"Unexpected ObjectStoragePlan Data Source Configure Type",
-			fmt.Sprintf("Expected *api.Client, got: %T. Please report this issue to the provider developers.", req.ProviderData),
+			fmt.Sprintf("Expected utho.Client, got: %T. Please report this issue to the provider developers.", req.ProviderData),
 		)
 
 		return
@@ -99,7 +99,7 @@ func (d *ObjectStoragePlanDataSource) Configure(_ context.Context, req datasourc
 func (d *ObjectStoragePlanDataSource) Read(ctx context.Context, req datasource.ReadRequest, resp *datasource.ReadResponse) {
 	tflog.Debug(ctx, "Preparing to read `item` data source")
 	// get object_storage_plan
-	objectStoragePlan, err := d.client.GetObjectStoragePlan(ctx)
+	objectStoragePlan, err := d.client.ObjectStorage().ListSubscriptionPlanPricing()
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Unable to list `Object Storage Plan`",
@@ -109,7 +109,7 @@ func (d *ObjectStoragePlanDataSource) Read(ctx context.Context, req datasource.R
 	}
 	// Map response body to model
 	state := ObjectStoragePlanDataSourceModel{}
-	for _, price := range objectStoragePlan.Pricing {
+	for _, price := range objectStoragePlan {
 		resourceState := PricingDataSourceModel{
 			ID:             types.StringValue(price.ID),
 			UUID:           types.StringValue(price.UUID),

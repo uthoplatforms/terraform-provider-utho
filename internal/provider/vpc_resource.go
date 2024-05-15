@@ -11,7 +11,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
-	"github.com/uthoplatforms/terraform-provider-utho/api"
+	"github.com/uthoplatforms/utho-go/utho"
 )
 
 // implement resource interfaces.
@@ -30,7 +30,7 @@ func NewVpcResource() resource.Resource {
 // VpcResource is the resource implementation.
 type (
 	VpcResource struct {
-		client *api.Client
+		client utho.Client
 	}
 
 	// VpcResource is the model implementation.
@@ -57,11 +57,11 @@ func (d *VpcResource) Configure(_ context.Context, req resource.ConfigureRequest
 		return
 	}
 
-	client, ok := req.ProviderData.(*api.Client)
+	client, ok := req.ProviderData.(utho.Client)
 	if !ok {
 		resp.Diagnostics.AddError(
 			"Unexpected Vpc Data Source Configure Type",
-			fmt.Sprintf("Expected *api.Client, got: %T. Please report this issue to the provider developers.", req.ProviderData),
+			fmt.Sprintf("Expected utho.Client, got: %T. Please report this issue to the provider developers.", req.ProviderData),
 		)
 
 		return
@@ -145,7 +145,7 @@ func (s *VpcResource) Create(ctx context.Context, req resource.CreateRequest, re
 	}
 
 	// Generate API request body from plan
-	vpcRequest := api.VpcRequest{
+	vpcRequest := utho.CreateVpcParams{
 		Dcslug:  plan.Dcslug.ValueString(),
 		Name:    plan.Name.ValueString(),
 		Planid:  plan.Planid.ValueString(),
@@ -153,7 +153,7 @@ func (s *VpcResource) Create(ctx context.Context, req resource.CreateRequest, re
 		Size:    plan.Size.ValueString(),
 	}
 	tflog.Debug(ctx, "send create vpc request")
-	vpc, err := s.client.CreateVpc(ctx, vpcRequest)
+	vpc, err := s.client.Vpc().Create(vpcRequest)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error creating vpc",
@@ -163,18 +163,18 @@ func (s *VpcResource) Create(ctx context.Context, req resource.CreateRequest, re
 	}
 
 	// get vpc data
-	getVpc, err := s.client.GetVpc(ctx, vpc.Id)
+	getVpc, err := s.client.Vpc().Read(vpc.ID)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error Reading utho vpc",
-			"Could not read utho vpc "+vpc.Id+": "+err.Error(),
+			"Could not read utho vpc "+vpc.ID+": "+err.Error(),
 		)
 		return
 	}
 
 	// Map response body to schema and populate Computed attribute values
 	plan = VpcResourceModel{
-		Id:        types.StringValue(vpc.Id),
+		Id:        types.StringValue(vpc.ID),
 		Dcslug:    types.StringValue(plan.Dcslug.ValueString()),
 		Name:      types.StringValue(plan.Name.ValueString()),
 		Planid:    types.StringValue(plan.Planid.ValueString()),
@@ -207,7 +207,7 @@ func (s *VpcResource) Read(ctx context.Context, req resource.ReadRequest, resp *
 
 	tflog.Debug(ctx, "send get vpc request")
 	// Get refreshed vpc value from utho
-	vpc, err := s.client.GetVpc(ctx, state.Id.ValueString())
+	vpc, err := s.client.Vpc().Read(state.Id.ValueString())
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error Reading utho vpc",
@@ -218,7 +218,7 @@ func (s *VpcResource) Read(ctx context.Context, req resource.ReadRequest, resp *
 
 	// Overwrite items with refreshed state
 	state = VpcResourceModel{
-		Id:        types.StringValue(vpc.Id),
+		Id:        types.StringValue(vpc.ID),
 		Dcslug:    types.StringValue(vpc.Dcslug),
 		Name:      types.StringValue(vpc.Name),
 		Planid:    types.StringValue(state.Planid.ValueString()),
