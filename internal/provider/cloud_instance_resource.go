@@ -338,7 +338,7 @@ func (s *CloudInstanceResource) Create(ctx context.Context, req resource.CreateR
 		return
 	}
 
-	getCloudInstance, err := s.client.CloudInstances().Read(cloudinstance.Cloudid)
+	getCloudInstance, err := s.client.CloudInstances().Read(cloudinstance.ID)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error Reading utho cloud instance",
@@ -355,7 +355,7 @@ func (s *CloudInstanceResource) Create(ctx context.Context, req resource.CreateR
 
 	// Map response body to schema and populate Computed attribute values
 	plan.RootPassword = types.StringValue(cloudinstance.Password)
-	plan.ID = types.StringValue(cloudinstance.Cloudid)
+	plan.ID = types.StringValue(cloudinstance.ID)
 	plan.IP = types.StringValue(cloudinstance.Ipv4)
 	plan.CPU = types.StringValue(getCloudInstance.CPU)
 	plan.RAM = types.StringValue(getCloudInstance.RAM)
@@ -604,7 +604,7 @@ func (s *CloudInstanceResource) Read(ctx context.Context, req resource.ReadReque
 	state.Image = types.StringValue(cloudinstance.Image.Image)
 	state.Enablebackup = types.BoolValue(enableBackupMap[cloudinstance.Features.Backups])
 	state.Billingcycle = types.StringValue(cloudinstance.Billingcycle)
-	state.ID = types.StringValue(cloudinstance.Cloudid)
+	state.ID = types.StringValue(cloudinstance.ID)
 	state.IP = types.StringValue(cloudinstance.IP)
 	state.CPU = types.StringValue(cloudinstance.CPU)
 	state.RAM = types.StringValue(cloudinstance.RAM)
