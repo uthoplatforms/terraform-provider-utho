@@ -11,7 +11,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
-	"github.com/uthoplatforms/terraform-provider-utho/api"
+	"github.com/uthoplatforms/utho-go/utho"
 )
 
 var _ provider.Provider = &uthoProvider{}
@@ -106,7 +106,15 @@ func (p *uthoProvider) Configure(ctx context.Context, req provider.ConfigureRequ
 	tflog.Debug(ctx, "Creating Token client")
 
 	// Create a new Token client using the configuration values
-	client := api.NewClient(token)
+	client, err := utho.NewClient(token)
+
+	if err != nil {
+		resp.Diagnostics.AddError(
+			"Unable to create Utho client",
+			err.Error(),
+		)
+		return
+	}
 
 	// Make the Token client available during DataSource and Resource
 
@@ -129,11 +137,12 @@ func (p *uthoProvider) DataSources(_ context.Context) []func() datasource.DataSo
 func (p *uthoProvider) Resources(_ context.Context) []func() resource.Resource {
 	return []func() resource.Resource{
 		NewDomainResource,
+		NewDnsRecordResource,
 		NewVpcResource,
 		NewFirewallResource,
-		NewDnsRecordResource,
 		NewLoadbalancerResource,
 		NewCloudInstanceResource,
 		NewTargetGroupResource,
+		NewAutoScalingResource,
 	}
 }
