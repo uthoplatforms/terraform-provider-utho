@@ -162,7 +162,7 @@ func (s *LoadbalancerResource) Create(ctx context.Context, req resource.CreateRe
 		return
 	}
 
-	loadbalancer, err := s.client.Loadbalancers().Read(createloadbalancer.Loadbalancerid)
+	loadbalancer, err := s.client.Loadbalancers().Read(createloadbalancer.ID)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error creating loadbalancer",

@@ -32,19 +32,19 @@ resource "utho_cloud_instance" "example" {
 
 ### Required
 
-- `dcslug` (String)
-- `image` (String)
-- `name` (String)
+- `dcslug` (String) Provide Zone dcslug eg: innoida
+- `image` (String) Image name eg: centos-7.4-x86_64
+- `name` (String) Give a name to your cloud server eg: myweb1.server.com
 
 ### Optional
 
-- `backupid` (String)
-- `billingcycle` (String)
-- `enablebackup` (Boolean)
-- `firewall` (String)
-- `planid` (String)
-- `snapshotid` (String)
-- `sshkeys` (String)
+- `backupid` (String) Provide a backupid if you have a backup in same datacenter location.
+- `billingcycle` (String) If you required billing cycle other then hourly billing you can pass value as eg: monthly, 3month, 6month, 12month. by default its selected as hourly
+- `enablebackup` (Boolean) Please pass value on to enable weekly backups*
+- `firewall` (String) Firewall Id
+- `planid` (String) Cloud Plan ID
+- `snapshotid` (String) Provide a snapshot id if you have a snapshot in same datacenter location.
+- `sshkeys` (String) Privide SSH Key ids or pass multiple SSH Key ids with commans (eg: 432,331).
 
 ### Read-Only
 
@@ -54,7 +54,6 @@ resource "utho_cloud_instance" "example" {
 - `bandwidth_free` (Number) Bandwidth Free
 - `bandwidth_used` (Number) Bandwidth Used
 - `cloudhourlycost` (Number) Cloudhourlycost
-- `cloudid` (String) Cloudid
 - `consolepassword` (String) Consolepassword
 - `cost` (Number) Cost
 - `cpu` (String) Cpu
@@ -63,11 +62,11 @@ resource "utho_cloud_instance" "example" {
 - `creditreserved` (Number) Creditreserved
 - `dclocation` (Attributes) dclocation (see [below for nested schema](#nestedatt--dclocation))
 - `disksize` (Number) Disksize
-- `features` (Attributes) Features (see [below for nested schema](#nestedatt--features))
 - `firewalls` (Attributes List) (see [below for nested schema](#nestedatt--firewalls))
 - `gpu_available` (String) Gpu Available
 - `ha` (String) Ha
 - `hourlycost` (Number) Hourlycost
+- `id` (String) Cloud id
 - `imagecost` (Number) Imagecost
 - `imagehourlycost` (Number) Imagehourlycost
 - `ip` (String) Ip
@@ -83,7 +82,7 @@ resource "utho_cloud_instance" "example" {
 - `private_network` (Attributes List) (see [below for nested schema](#nestedatt--private_network))
 - `public_network` (Attributes List) (see [below for nested schema](#nestedatt--public_network))
 - `ram` (String) Ram
-- `root_password` (String)
+- `root_password` (String) Root Password
 - `snapshots` (Attributes List) (see [below for nested schema](#nestedatt--snapshots))
 - `status` (String) Status
 - `storages` (Attributes List) (see [below for nested schema](#nestedatt--storages))
@@ -99,14 +98,6 @@ Read-Only:
 - `dc` (String)
 - `dccc` (String)
 - `location` (String)
-
-
-<a id="nestedatt--features"></a>
-### Nested Schema for `features`
-
-Read-Only:
-
-- `backups` (String) backups
 
 
 <a id="nestedatt--firewalls"></a>
@@ -166,7 +157,6 @@ Read-Only:
 Read-Only:
 
 - `bus` (String)
-- `created_at` (String)
 - `disk_free` (String)
 - `disk_used` (String)
 - `disk_usedp` (String)

@@ -3,6 +3,7 @@ package provider
 import (
 	"context"
 	"fmt"
+	"strconv"
 
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
@@ -159,11 +160,12 @@ func (s *TargetGroupResource) Create(ctx context.Context, req resource.CreateReq
 		)
 		return
 	}
+	targetGroupId :=  strconv.Itoa(createTargetGroupResponse.ID)
 
 	var targets []string
 	for _, target := range plan.Targets {
 		createTargetGroupTargetParams := utho.CreateTargetGroupTargetParams{
-			TargetGroupId:   createTargetGroupResponse.ID,
+			TargetGroupId:   targetGroupId,
 			IP:              target.IP.ValueString(),
 			BackendPort:     target.BackendPort.ValueString(),
 			BackendProtocol: target.BackendProtocol.ValueString(),
@@ -180,11 +182,11 @@ func (s *TargetGroupResource) Create(ctx context.Context, req resource.CreateReq
 		targets = append(targets, createTargetsRes.ID)
 	}
 
-	targetGroup, err := s.client.TargetGroup().Read(createTargetGroupResponse.ID)
+	targetGroup, err := s.client.TargetGroup().Read(targetGroupId)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error Reading utho target group",
-			"Could not read utho target group "+createTargetGroupResponse.ID+": "+err.Error(),
+			"Could not read utho target group "+targetGroupId+": "+err.Error(),
 		)
 		return
 	}
@@ -209,7 +211,7 @@ func (s *TargetGroupResource) Create(ctx context.Context, req resource.CreateReq
 	}
 
 	plan = TargetGroupResourceModel{
-		ID:                  types.StringValue(createTargetGroupResponse.ID),
+		ID:                  types.StringValue(targetGroupId),
 		Name:                types.StringValue(targetGroup.Name),
 		Port:                types.StringValue(targetGroup.Port),
 		Protocol:            types.StringValue(targetGroup.Protocol),

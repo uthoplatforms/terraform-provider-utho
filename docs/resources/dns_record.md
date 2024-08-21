@@ -36,17 +36,17 @@ resource "utho_dns_record" "example" {
 ### Required
 
 - `domain` (String) Name of the domain
-- `hostname` (String) hostname
-- `porttype` (String) porttype
-- `ttl` (String) ttl
-- `type` (String) type
-- `value` (String) value
+- `hostname` (String) Name (Hostname) The host name, alias, or service being defined by the record.
+- `porttype` (String) This value is the time to live for the record, in seconds. This defines the time frame that
+- `ttl` (String) The priority of the host (for SRV and MX records. null otherwise).
+- `type` (String) The Record Type (A, AAAA, CAA, CNAME, MX, TXT, SRV, NS)
+- `value` (String) Variable data depending on record type. For example, the value for an A record would be the IPv4 address to which the domain will be mapped. For a CAA record, it would contain the domain name of the CA being granted permission to issue certificates.
 
 ### Optional
 
-- `port` (String) port
+- `port` (String) The port that the service is accessible on (for SRV records only. null otherwise).
 - `priority` (String) priority
-- `wight` (String) wight
+- `wight` (String) The weight of records with the same priority (for SRV records only. null otherwise).
 
 ### Read-Only
 

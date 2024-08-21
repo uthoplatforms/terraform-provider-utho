@@ -23,7 +23,7 @@ resource "utho_domain" "example" {
 
 ### Required
 
-- `domain` (String) Must be unique
+- `domain` (String) Domain name
 
 ### Read-Only
 
