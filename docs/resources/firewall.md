@@ -27,7 +27,7 @@ resource "utho_firewall" "example" {
 
 ### Read-Only
 
-- `created_at` (String) created_at
+- `created_at` (String) Created At
 - `id` (String) id
-- `rulecount` (String) rulecount
-- `serverscount` (String) serverscount
+- `rulecount` (String) Rule Count
+- `serverscount` (String) Servers Count

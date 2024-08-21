@@ -22,6 +22,7 @@ resource "utho_cloud_instance" "example" {
 	planid       = "10045"
 	enablebackup = "false"
 	billingcycle = "hourly"
+	firewall     = "23432614"
 }		  
 `,
 				Check: resource.ComposeAggregateTestCheckFunc(
@@ -45,7 +46,7 @@ resource "utho_cloud_instance" "example" {
 				ImportState:       true,
 				ImportStateVerify: true,
 
-				ImportStateVerifyIgnore: []string{"powerstatus", "root_password", "ha", "planid"},
+				ImportStateVerifyIgnore: []string{"powerstatus", "root_password", "ha", "planid", "firewall"},
 			},
 		},
 	})

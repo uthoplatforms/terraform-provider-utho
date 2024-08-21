@@ -26,22 +26,22 @@ resource "utho_loadbalancer" "example" {
 
 ### Required
 
-- `dcslug` (String) dcslug
-- `name` (String) name
-- `type` (String) type of loadbalancer
+- `dcslug` (String) Provide Zone dcslug eg: innoida
+- `name` (String) Load Balancer name eg: webapplb
+- `type` (String) Load-Balancer type must be either application or network. The default value is application
 
 ### Read-Only
 
 - `algorithm` (String) Algorithm
-- `backendcount` (String) Backendcount
+- `backendcount` (String) Backend count
 - `cc` (String) Cc
 - `city` (String) City
 - `cookie` (String) Cookie
-- `cookiename` (String) Cookiename
+- `cookiename` (String) Cookie name
 - `country` (String) Country
 - `created_at` (String) Created At
 - `id` (String) Id
 - `ip` (String) Ip
-- `redirecthttps` (String) Redirecthttps
+- `redirecthttps` (String) Redirect https
 - `status` (String) Status
-- `userid` (String) Userid
+- `userid` (String) User id
