@@ -642,7 +642,7 @@ func (s *AutoScalingResource) Create(ctx context.Context, req resource.CreateReq
 	instancesModel := []InstancesModel{}
 	for _, v := range getAutoScaling.Instances {
 		Instances := InstancesModel{
-			Cloudid:   types.StringValue(v.Cloudid),
+			Cloudid:   types.StringValue(v.ID),
 			Hostname:  types.StringValue(v.Hostname),
 			CreatedAt: types.StringValue(v.CreatedAt),
 			IP:        types.StringValue(v.IP),
@@ -881,7 +881,7 @@ func (s *AutoScalingResource) Read(ctx context.Context, req resource.ReadRequest
 	instancesModel := []InstancesModel{}
 	for _, v := range getAutoScaling.Instances {
 		Instances := InstancesModel{
-			Cloudid:   types.StringValue(v.Cloudid),
+			Cloudid:   types.StringValue(v.ID),
 			Hostname:  types.StringValue(v.Hostname),
 			CreatedAt: types.StringValue(v.CreatedAt),
 			IP:        types.StringValue(v.IP),
