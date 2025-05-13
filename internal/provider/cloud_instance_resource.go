@@ -38,6 +38,7 @@ type CloudInstanceResourceModel struct {
 	Dcslug       types.String `tfsdk:"dcslug"`
 	Image        types.String `tfsdk:"image"`
 	Planid       types.String `tfsdk:"planid"`
+	Vpcid        types.String `tfsdk:"vpc_id"`
 	RootPassword types.String `tfsdk:"root_password"`
 	Firewall     types.String `tfsdk:"firewall"`
 	Enablebackup types.Bool   `tfsdk:"enablebackup"`
@@ -165,6 +166,7 @@ func (s *CloudInstanceResource) Schema(_ context.Context, _ resource.SchemaReque
 		"dcslug":            schema.StringAttribute{Required: true, MarkdownDescription: "Provide Zone dcslug eg: innoida. You can find a list of available dcslug on [Utho API documentation](https://utho.com/api-docs/#api-Cloud-Servers-AVAILABLEDCZONES).", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
 		"image":             schema.StringAttribute{Required: true, Description: "Image name eg: centos-7.4-x86_64", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
 		"planid":            schema.StringAttribute{Optional: true, MarkdownDescription: "The unique ID that identifies the type of Instance plane. You can find a list of available IDs on [Utho API documentation](https://utho.com/api-docs/#api-Cloud-Servers-GETPLANS).", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
+		"vpc_id":            schema.StringAttribute{Optional: true, MarkdownDescription: "The unique ID that identifies the VPC. You can list all VPCs id on [Utho API documentation](https://utho.com/api-docs/#api-VPC-VPCList).", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
 		"firewall":          schema.StringAttribute{Optional: true, Description: "Firewall Id", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
 		"enablebackup":      schema.BoolAttribute{Optional: true, Description: "Please pass value on to enable weekly backups*", PlanModifiers: []planmodifier.Bool{boolplanmodifier.RequiresReplace()}},
 		"billingcycle":      schema.StringAttribute{Optional: true, Description: "If you required billing cycle other then hourly billing you can pass value as eg: monthly, 3month, 6month, 12month. by default its selected as hourly", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
@@ -316,6 +318,7 @@ func (s *CloudInstanceResource) Create(ctx context.Context, req resource.CreateR
 		Dcslug:       plan.Dcslug.ValueString(),
 		Image:        plan.Image.ValueString(),
 		Planid:       plan.Planid.ValueString(),
+		Vpcid:        plan.Vpcid.ValueString(),
 		RootPassword: plan.RootPassword.ValueString(),
 		Firewall:     plan.Firewall.ValueString(),
 		Enablebackup: enableBackupMapStrBool[plan.Enablebackup.ValueBool()],
@@ -643,6 +646,9 @@ func (s *CloudInstanceResource) Read(ctx context.Context, req resource.ReadReque
 	}
 	if !state.Planid.IsNull() {
 		state.Planid = types.StringValue(state.Planid.ValueString())
+	}
+	if !state.Vpcid.IsNull() {
+		state.Vpcid = types.StringValue(state.Vpcid.ValueString())
 	}
 	if !state.RootPassword.IsNull() {
 		state.RootPassword = types.StringValue(state.RootPassword.ValueString())

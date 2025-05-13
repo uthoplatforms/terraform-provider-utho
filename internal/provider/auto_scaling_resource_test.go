@@ -59,9 +59,9 @@ resource "utho_auto_scaling" "example" {
 				),
 			},
 			{
-				ResourceName:      resourceName,
-				ImportState:       true,
-				ImportStateVerify: true,
+				ResourceName:            resourceName,
+				ImportState:             true,
+				ImportStateVerify:       true,
 				ImportStateVerifyIgnore: []string{"loadbalancers_id", "security_group_id", "target_groups_id", "vpc_id"},
 			},
 		},
