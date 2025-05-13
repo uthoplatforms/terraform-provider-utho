@@ -23,6 +23,7 @@ resource "utho_cloud_instance" "example" {
 	enablebackup = "false"
 	billingcycle = "hourly"
 	firewall     = "23432614"
+	vpc_id		 = "f1qq22aa-11aa-11dd-8b94-f69f312c0245"
 }		  
 `,
 				Check: resource.ComposeAggregateTestCheckFunc(
@@ -31,6 +32,7 @@ resource "utho_cloud_instance" "example" {
 					resource.TestCheckResourceAttr(resourceName, "enablebackup", "false"),
 					resource.TestCheckResourceAttr(resourceName, "billingcycle", "hourly"),
 					resource.TestCheckResourceAttr(resourceName, "image", "rocky-8.8-x86_64"),
+					resource.TestCheckResourceAttr(resourceName, "vpc_id", "f1qq22aa-11aa-11dd-8b94-f69f312c0245"),
 
 					resource.TestCheckResourceAttrSet(resourceName, "id"),
 					resource.TestCheckResourceAttrSet(resourceName, "ip"),

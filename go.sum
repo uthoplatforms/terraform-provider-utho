@@ -187,6 +187,8 @@ github.com/uthoplatforms/utho-go v0.1.12 h1:SJkvzPPbkrGVWWNY0n4YCAKrTv65UykNqcIr
 github.com/uthoplatforms/utho-go v0.1.12/go.mod h1:tA5Mz7SX1RNdGh+WMriazdkl5RvS0X6hkvlrhmFdegY=
 github.com/uthoplatforms/utho-go v0.1.21 h1:fJE6PIjBOAV/KcirWHlimXphxVyk0EDB7NwIQt/YKLA=
 github.com/uthoplatforms/utho-go v0.1.21/go.mod h1:tA5Mz7SX1RNdGh+WMriazdkl5RvS0X6hkvlrhmFdegY=
+github.com/uthoplatforms/utho-go v0.1.26 h1:0NtC/Zw6CenpBtB9A45PB5isHrhvzW81k/rsRNUoFJs=
+github.com/uthoplatforms/utho-go v0.1.26/go.mod h1:tA5Mz7SX1RNdGh+WMriazdkl5RvS0X6hkvlrhmFdegY=
 github.com/vmihailenco/msgpack v3.3.3+incompatible/go.mod h1:fy3FlTQTDXWkZ7Bh6AcGMlsjHatGryHQYUTf1ShIgkk=
 github.com/vmihailenco/msgpack v4.0.4+incompatible h1:dSLoQfGFAo3F6OoNhwUmLwVgaUXK79GlxNBwueZn0xI=
 github.com/vmihailenco/msgpack v4.0.4+incompatible/go.mod h1:fy3FlTQTDXWkZ7Bh6AcGMlsjHatGryHQYUTf1ShIgkk=

@@ -9,4 +9,5 @@ resource "utho_cloud_instance" "example" {
   billingcycle = "hourly"
   backupid     = ""
   sshkeys      = ""
+  vpc_id       = ""
 }
