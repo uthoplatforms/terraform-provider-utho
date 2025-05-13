@@ -189,6 +189,10 @@ github.com/uthoplatforms/utho-go v0.1.21 h1:fJE6PIjBOAV/KcirWHlimXphxVyk0EDB7NwI
 github.com/uthoplatforms/utho-go v0.1.21/go.mod h1:tA5Mz7SX1RNdGh+WMriazdkl5RvS0X6hkvlrhmFdegY=
 github.com/uthoplatforms/utho-go v0.1.26 h1:0NtC/Zw6CenpBtB9A45PB5isHrhvzW81k/rsRNUoFJs=
 github.com/uthoplatforms/utho-go v0.1.26/go.mod h1:tA5Mz7SX1RNdGh+WMriazdkl5RvS0X6hkvlrhmFdegY=
+github.com/uthoplatforms/utho-go v0.1.43 h1:oQoLVzuENJmJFC3lUFHfwerc4LEseAYZWsdhsn24xXc=
+github.com/uthoplatforms/utho-go v0.1.43/go.mod h1:tA5Mz7SX1RNdGh+WMriazdkl5RvS0X6hkvlrhmFdegY=
+github.com/uthoplatforms/utho-go v0.1.44 h1:/xTMLfKT3N+r/h+cp5iVLqZRYCOZtD3uKBszf/Xz7Bc=
+github.com/uthoplatforms/utho-go v0.1.44/go.mod h1:tA5Mz7SX1RNdGh+WMriazdkl5RvS0X6hkvlrhmFdegY=
 github.com/vmihailenco/msgpack v3.3.3+incompatible/go.mod h1:fy3FlTQTDXWkZ7Bh6AcGMlsjHatGryHQYUTf1ShIgkk=
 github.com/vmihailenco/msgpack v4.0.4+incompatible h1:dSLoQfGFAo3F6OoNhwUmLwVgaUXK79GlxNBwueZn0xI=
 github.com/vmihailenco/msgpack v4.0.4+incompatible/go.mod h1:fy3FlTQTDXWkZ7Bh6AcGMlsjHatGryHQYUTf1ShIgkk=
