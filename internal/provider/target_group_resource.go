@@ -160,7 +160,7 @@ func (s *TargetGroupResource) Create(ctx context.Context, req resource.CreateReq
 		)
 		return
 	}
-	targetGroupId :=  strconv.Itoa(createTargetGroupResponse.ID)
+	targetGroupId := strconv.Itoa(createTargetGroupResponse.ID)
 
 	var targets []string
 	for _, target := range plan.Targets {
