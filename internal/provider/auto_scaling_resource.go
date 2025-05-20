@@ -56,7 +56,7 @@ type AutoScalingResourceModel struct {
 	StoppedAt          types.String  `tfsdk:"stopped_at"`
 	StartedAt          types.String  `tfsdk:"started_at"`
 	DeletedAt          types.String  `tfsdk:"deleted_at"`
-	PublicIPEnabled    types.Bool    `tfsdk:"public_ip_enabled"`
+	PublicIPEnabled    types.String  `tfsdk:"public_ip_enabled"`
 	CooldownTill       types.String  `tfsdk:"cooldown_till"`
 	Backupid           types.String  `tfsdk:"backupid"`
 	Stackid            types.String  `tfsdk:"stackid"`
@@ -435,7 +435,7 @@ func (s *AutoScalingResource) Create(ctx context.Context, req resource.CreateReq
 		Desiredsize:        plan.Desiredsize.ValueString(),
 		Planname:           plan.Planname.ValueString(),
 		InstanceTemplateid: plan.InstanceTemplateid.ValueString(),
-		PublicIPEnabled:    plan.PublicIPEnabled.ValueBool(),
+		PublicIPEnabled:    plan.PublicIPEnabled.ValueString(),
 		Vpc:                plan.VpcID.ValueString(),
 		LoadBalancers:      plan.LoadbalancersID.ValueString(),
 		Stackid:            plan.Stackid.ValueString(),
@@ -466,10 +466,10 @@ func (s *AutoScalingResource) Create(ctx context.Context, req resource.CreateReq
 	}
 
 	// Map response body to schema and populate Computed attribute values
-	publicIPEnabledpMapStrBool := map[string]bool{
-		"0": false,
-		"1": true,
-	}
+	// publicIPEnabledpMapStrBool := map[string]bool{
+	// 	"0": false,
+	// 	"1": true,
+	// }
 	osDiskSize, _ := strconv.Atoi(getAutoScaling.Plan.Disk)
 
 	policiesModel := []PolicyModel{}
@@ -528,7 +528,7 @@ func (s *AutoScalingResource) Create(ctx context.Context, req resource.CreateReq
 	plan.StoppedAt = types.StringValue(getAutoScaling.StoppedAt)
 	plan.StartedAt = types.StringValue(getAutoScaling.StartedAt)
 	plan.DeletedAt = types.StringValue(getAutoScaling.DeletedAt)
-	plan.PublicIPEnabled = types.BoolValue(publicIPEnabledpMapStrBool[getAutoScaling.PublicIPEnabled])
+	plan.PublicIPEnabled = types.StringValue(getAutoScaling.PublicIPEnabled)
 	plan.CooldownTill = types.StringValue(getAutoScaling.CooldownTill)
 	plan.Backupid = types.StringValue(getAutoScaling.Backupid)
 	plan.Stackid = types.StringValue(getAutoScaling.Stack)
@@ -548,7 +548,7 @@ func (s *AutoScalingResource) Create(ctx context.Context, req resource.CreateReq
 	dclocationModel := DclocationModel{
 		Location: types.StringValue(getAutoScaling.Dclocation.Location),
 		Country:  types.StringValue(getAutoScaling.Dclocation.Country),
-		Dc:       types.StringValue(getAutoScaling.Dclocation.Dc),
+		Dc:       types.StringValue(getAutoScaling.Dclocation.DC),
 		Dccc:     types.StringValue(getAutoScaling.Dclocation.Dccc),
 	}
 	diags = resp.State.SetAttribute(ctx, path.Root("dclocation"), dclocationModel)
@@ -704,10 +704,10 @@ func (s *AutoScalingResource) Read(ctx context.Context, req resource.ReadRequest
 	}
 
 	// Overwrite items with refreshed state
-	publicIPEnabledpMapStrBool := map[string]bool{
-		"0": false,
-		"1": true,
-	}
+	// publicIPEnabledpMapStrBool := map[string]bool{
+	// 	"0": false,
+	// 	"1": true,
+	// }
 	osDiskSize, _ := strconv.Atoi(getAutoScaling.Plan.Disk)
 
 	policiesModel := []PolicyModel{}
@@ -766,7 +766,7 @@ func (s *AutoScalingResource) Read(ctx context.Context, req resource.ReadRequest
 	state.StoppedAt = types.StringValue(getAutoScaling.StoppedAt)
 	state.StartedAt = types.StringValue(getAutoScaling.StartedAt)
 	state.DeletedAt = types.StringValue(getAutoScaling.DeletedAt)
-	state.PublicIPEnabled = types.BoolValue(publicIPEnabledpMapStrBool[getAutoScaling.PublicIPEnabled])
+	state.PublicIPEnabled = types.StringValue(getAutoScaling.PublicIPEnabled)
 	state.CooldownTill = types.StringValue(getAutoScaling.CooldownTill)
 	state.Backupid = types.StringValue(getAutoScaling.Backupid)
 	state.Stackid = types.StringValue(getAutoScaling.Stack)
@@ -786,7 +786,7 @@ func (s *AutoScalingResource) Read(ctx context.Context, req resource.ReadRequest
 	dclocationModel := DclocationModel{
 		Location: types.StringValue(getAutoScaling.Dclocation.Location),
 		Country:  types.StringValue(getAutoScaling.Dclocation.Country),
-		Dc:       types.StringValue(getAutoScaling.Dclocation.Dc),
+		Dc:       types.StringValue(getAutoScaling.Dclocation.DC),
 		Dccc:     types.StringValue(getAutoScaling.Dclocation.Dccc),
 	}
 	diags = resp.State.SetAttribute(ctx, path.Root("dclocation"), dclocationModel)

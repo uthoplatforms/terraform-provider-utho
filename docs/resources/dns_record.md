@@ -46,7 +46,7 @@ resource "utho_dns_record" "example" {
 
 - `port` (String) The port that the service is accessible on (for SRV records only. null otherwise).
 - `priority` (String) priority
-- `wight` (String) The weight of records with the same priority (for SRV records only. null otherwise).
+- `weight` (String) The weight of records with the same priority (for SRV records only. null otherwise).
 
 ### Read-Only
 

@@ -146,7 +146,7 @@ func (s *LoadbalancerResource) Create(ctx context.Context, req resource.CreateRe
 	}
 
 	// Generate API request body from plan
-	loadbalancerRequest := utho.CreateLoadbalancerParams{
+	loadbalancerRequest := utho.CreateLoadblancerParams{
 		Dcslug: plan.Dcslug.ValueString(),
 		Type:   plan.Type.ValueString(),
 		Name:   plan.Name.ValueString(),

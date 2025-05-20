@@ -24,6 +24,7 @@ resource "utho_cloud_instance" "example" {
   billingcycle = "hourly"
   backupid     = ""
   sshkeys      = ""
+  vpc_id       = ""
 }
 ```
 
@@ -45,6 +46,7 @@ resource "utho_cloud_instance" "example" {
 - `planid` (String) The unique ID that identifies the type of Instance plane. You can find a list of available IDs on [Utho API documentation](https://utho.com/api-docs/#api-Cloud-Servers-GETPLANS).
 - `snapshotid` (String) Provide a snapshot id if you have a snapshot in same datacenter location.
 - `sshkeys` (String) Provide SSH Key ids or pass multiple SSH Key ids with commans (eg: 432,331).
+- `vpc_id` (String) The unique ID that identifies the VPC. You can list all VPCs id on [Utho API documentation](https://utho.com/api-docs/#api-VPC-VPCList).
 
 ### Read-Only
 

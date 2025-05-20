@@ -41,7 +41,7 @@ type DnsRecordResourceModel struct {
 	Porttype types.String `tfsdk:"porttype"`
 	Port     types.String `tfsdk:"port"`
 	Priority types.String `tfsdk:"priority"`
-	Wight    types.String `tfsdk:"wight"`
+	Weight   types.String `tfsdk:"weight"`
 }
 
 // Metadata returns the resource type name.
@@ -80,7 +80,7 @@ func (s *DnsRecordResource) Schema(_ context.Context, _ resource.SchemaRequest, 
 			"porttype": schema.StringAttribute{Required: true, Description: "This value is the time to live for the record, in seconds. This defines the time frame that ", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
 			"port":     schema.StringAttribute{Optional: true, Description: "The port that the service is accessible on (for SRV records only. null otherwise).", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
 			"priority": schema.StringAttribute{Optional: true, Description: "priority", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
-			"wight":    schema.StringAttribute{Optional: true, Description: "The weight of records with the same priority (for SRV records only. null otherwise). ", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
+			"weight":   schema.StringAttribute{Optional: true, Description: "The weight of records with the same priority (for SRV records only. null otherwise). ", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
 		},
 	}
 }
@@ -111,7 +111,7 @@ func (s *DnsRecordResource) Create(ctx context.Context, req resource.CreateReque
 		Porttype: plan.Porttype.ValueString(),
 		Port:     plan.Port.ValueString(),
 		Priority: plan.Priority.ValueString(),
-		Wight:    plan.Wight.ValueString(),
+		Weight:   plan.Weight.ValueString(),
 	}
 	tflog.Debug(ctx, "send create dns record request")
 	dnsRecord, err := s.client.Domain().CreateDnsRecord(dnsRecordRequest)
@@ -143,7 +143,7 @@ func (s *DnsRecordResource) Create(ctx context.Context, req resource.CreateReque
 		Porttype: types.StringValue(plan.Porttype.ValueString()),
 		Port:     types.StringValue(plan.Port.ValueString()),
 		Priority: types.StringValue(plan.Priority.ValueString()),
-		Wight:    types.StringValue(plan.Wight.ValueString()),
+		Weight:   types.StringValue(plan.Weight.ValueString()),
 	}
 
 	// Set state to fully populated data
@@ -214,7 +214,7 @@ func (s *DnsRecordResource) Read(ctx context.Context, req resource.ReadRequest, 
 		Porttype: types.StringValue(state.Porttype.ValueString()),
 		Port:     types.StringValue(state.Port.ValueString()),
 		Priority: types.StringValue(recordValues.Priority),
-		Wight:    types.StringValue(state.Wight.ValueString()),
+		Weight:   types.StringValue(state.Weight.ValueString()),
 	}
 
 	// Set refreshed state

@@ -318,7 +318,7 @@ func (s *CloudInstanceResource) Create(ctx context.Context, req resource.CreateR
 		Dcslug:       plan.Dcslug.ValueString(),
 		Image:        plan.Image.ValueString(),
 		Planid:       plan.Planid.ValueString(),
-		Vpcid:        plan.Vpcid.ValueString(),
+		VpcId:        plan.Vpcid.ValueString(),
 		RootPassword: plan.RootPassword.ValueString(),
 		Firewall:     plan.Firewall.ValueString(),
 		Enablebackup: enableBackupMapStrBool[plan.Enablebackup.ValueBool()],
@@ -499,7 +499,7 @@ func (s *CloudInstanceResource) Create(ctx context.Context, req resource.CreateR
 			Size:      types.Int64Value(int64(v.Size)),
 			DiskUsed:  types.StringValue(v.DiskUsed),
 			DiskFree:  types.StringValue(v.DiskFree),
-			DiskUsedp: types.StringValue(v.DiskUsedp),
+			DiskUsedp: types.StringValue(fmt.Sprintf("%d", v.DiskUsedp)),
 			Bus:       types.StringValue(v.Bus),
 			Type:      types.StringValue(v.Type),
 		}
@@ -772,7 +772,7 @@ func (s *CloudInstanceResource) Read(ctx context.Context, req resource.ReadReque
 			Size:      types.Int64Value(int64(v.Size)),
 			DiskUsed:  types.StringValue(v.DiskUsed),
 			DiskFree:  types.StringValue(v.DiskFree),
-			DiskUsedp: types.StringValue(v.DiskUsedp),
+			DiskUsedp: types.StringValue(fmt.Sprintf("%d", v.DiskUsedp)),
 			Bus:       types.StringValue(v.Bus),
 			Type:      types.StringValue(v.Type),
 		}
