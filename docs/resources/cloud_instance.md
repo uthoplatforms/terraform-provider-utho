@@ -16,16 +16,16 @@ description: |-
 resource "utho_cloud_instance" "example" {
   name = "example-name"
   # country slug
-  dcslug         = "inmumbaizone2"
-  image          = "ubuntu-22.04-x86_64"
-  planid         = "10045"
-  enablebackup   = "false"
-  billingcycle   = "hourly"
-  firewall       = "23432614"
-  vpc_id         = "4de5f07a-f51c-4323-b39a-ef66130e1bd9"
-  cpumodel       = "amd"
-  enablepublicip = "true"
-  root_password  = "qwe123"
+  dcslug          = "inmumbaizone2"
+  image           = "ubuntu-22.04-x86_64"
+  planid          = "10045"
+  enablebackup    = "false"
+  billingcycle    = "hourly"
+  firewall        = "23432614"
+  vpc_id          = "4de5f07a-f51c-4323-b39a-ef66130e1bd9"
+  cpumodel        = "amd"
+  enable_publicip = "true"
+  root_password   = "qwe123"
 }
 ```
 
@@ -37,7 +37,7 @@ resource "utho_cloud_instance" "example" {
 - `dcslug` (String) Provide Zone dcslug eg: innoida. You can find a list of available dcslug on [Utho API documentation](https://utho.com/api-docs/#api-Cloud-Servers-AVAILABLEDCZONES).
 - `image` (String) Image name eg: centos-7.4-x86_64
 - `name` (String) Give a name to your cloud server eg: myweb1.server.com
-- `root_password` (String) Root Password
+- `root_password` (String, Sensitive) Root Password
 
 ### Optional
 
@@ -45,8 +45,8 @@ resource "utho_cloud_instance" "example" {
 - `backupid` (String) Provide a backupid if you have a backup in same datacenter location.
 - `billingcycle` (String) If you required billing cycle other then hourly billing you can pass value as eg: monthly, 3month, 6month, 12month. by default its selected as hourly
 - `cpumodel` (String) CPU Model
+- `enable_publicip` (String) Enable Public IP
 - `enablebackup` (Boolean) Please pass value on to enable weekly backups*
-- `enablepublicip` (String) Enable Public IP
 - `firewall` (String) Firewall Id
 - `management` (String) Management
 - `planid` (String) The unique ID that identifies the type of Instance plane. You can find a list of available IDs on [Utho API documentation](https://utho.com/api-docs/#api-Cloud-Servers-GETPLANS).
