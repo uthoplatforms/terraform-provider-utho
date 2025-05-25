@@ -38,7 +38,7 @@ Read-Only:
 - `is_featured` (String) is_featured
 - `monthly` (String) monthly
 - `name` (String) name
-- `price` (String) price
+- `price` (Number) price
 - `ram` (String) ram
 - `slug` (String) slug
 - `type` (String) type

@@ -29,6 +29,13 @@ resource "utho_loadbalancer" "example" {
 - `dcslug` (String) Provide Zone dcslug eg: innoida
 - `name` (String) Load Balancer name eg: webapplb
 - `type` (String) Load-Balancer type must be either application or network. The default value is application
+- `vpc_id` (String) VPC ID
+
+### Optional
+
+- `cpu_model` (String) CPU Model default is 'amd'
+- `enable_publicip` (String) Enable Public ip
+- `firewall` (String) Firewall ID
 
 ### Read-Only
 

@@ -36,16 +36,23 @@ resource "utho_cloud_instance" "example" {
 - `dcslug` (String) Provide Zone dcslug eg: innoida. You can find a list of available dcslug on [Utho API documentation](https://utho.com/api-docs/#api-Cloud-Servers-AVAILABLEDCZONES).
 - `image` (String) Image name eg: centos-7.4-x86_64
 - `name` (String) Give a name to your cloud server eg: myweb1.server.com
+- `root_password` (String) Root Password
 
 ### Optional
 
+- `auth` (String) Authentication
 - `backupid` (String) Provide a backupid if you have a backup in same datacenter location.
 - `billingcycle` (String) If you required billing cycle other then hourly billing you can pass value as eg: monthly, 3month, 6month, 12month. by default its selected as hourly
+- `cpumodel` (String) CPU Model
 - `enablebackup` (Boolean) Please pass value on to enable weekly backups*
+- `enablepublicip` (String) Enable Public IP
 - `firewall` (String) Firewall Id
+- `management` (String) Management
 - `planid` (String) The unique ID that identifies the type of Instance plane. You can find a list of available IDs on [Utho API documentation](https://utho.com/api-docs/#api-Cloud-Servers-GETPLANS).
 - `snapshotid` (String) Provide a snapshot id if you have a snapshot in same datacenter location.
 - `sshkeys` (String) Provide SSH Key ids or pass multiple SSH Key ids with commans (eg: 432,331).
+- `subnetrequired` (String) Subnet Required
+- `support` (String) Support
 - `vpc_id` (String) The unique ID that identifies the VPC. You can list all VPCs id on [Utho API documentation](https://utho.com/api-docs/#api-VPC-VPCList).
 
 ### Read-Only
@@ -84,7 +91,6 @@ resource "utho_cloud_instance" "example" {
 - `private_network` (Attributes List) (see [below for nested schema](#nestedatt--private_network))
 - `public_network` (Attributes List) (see [below for nested schema](#nestedatt--public_network))
 - `ram` (String) Ram
-- `root_password` (String) Root Password
 - `snapshots` (Attributes List) (see [below for nested schema](#nestedatt--snapshots))
 - `status` (String) Status
 - `storages` (Attributes List) (see [below for nested schema](#nestedatt--storages))

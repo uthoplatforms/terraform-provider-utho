@@ -29,6 +29,7 @@ description: |-
 - `public_ip_enabled` (Boolean)
 - `stackid` (String)
 - `stackimage` (String)
+- `vpc_id` (String)
 
 ### Optional
 
@@ -36,7 +37,6 @@ description: |-
 - `policies` (Attributes List) policies (see [below for nested schema](#nestedatt--policies))
 - `security_group_id` (String)
 - `target_groups_id` (String)
-- `vpc_id` (String)
 
 ### Read-Only
 

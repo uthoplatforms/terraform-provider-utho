@@ -1,13 +1,14 @@
 resource "utho_cloud_instance" "example" {
   name = "example-name"
   # country slug
-  dcslug       = "inbangalore"
-  image        = "rocky-8.8-x86_64"
-  planid       = "10045"
-  firewall     = ""
-  enablebackup = "false"
-  billingcycle = "hourly"
-  backupid     = ""
-  sshkeys      = ""
-  vpc_id       = ""
+  dcslug         = "inmumbaizone2"
+  image          = "ubuntu-22.04-x86_64"
+  planid         = "10045"
+  enablebackup   = "false"
+  billingcycle   = "hourly"
+  firewall       = "23432614"
+  vpc_id         = "4de5f07a-f51c-4323-b39a-ef66130e1bd9"
+  cpumodel       = "amd"
+  enablepublicip = "true"
+  root_password  = "qwe123"
 }

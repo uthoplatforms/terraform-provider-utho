@@ -187,6 +187,8 @@ github.com/stretchr/testify v1.9.0 h1:HtqpIVDClZ4nwg75+f6Lvsy/wHu+3BoSGCbBAcpTsT
 github.com/stretchr/testify v1.9.0/go.mod h1:r2ic/lqez/lEtzL7wO/rwa5dbSLXVDPFyf8C91i36aY=
 github.com/uthoplatforms/utho-go v0.2.4 h1:rtyfc0XP83Np9nyU2jbKcW/xkMcXyWFGzWki96jtPX0=
 github.com/uthoplatforms/utho-go v0.2.4/go.mod h1:3YMMJYaWHiEXfaMEuTriReyk3X3viTl2lTDOISr7AvA=
+github.com/uthoplatforms/utho-go v0.2.5 h1:li6TCZ2Xq7KBBa/GIpcjQkP1oijFJH9+JRpHYgZWVGU=
+github.com/uthoplatforms/utho-go v0.2.5/go.mod h1:3YMMJYaWHiEXfaMEuTriReyk3X3viTl2lTDOISr7AvA=
 github.com/vmihailenco/msgpack v3.3.3+incompatible/go.mod h1:fy3FlTQTDXWkZ7Bh6AcGMlsjHatGryHQYUTf1ShIgkk=
 github.com/vmihailenco/msgpack v4.0.4+incompatible h1:dSLoQfGFAo3F6OoNhwUmLwVgaUXK79GlxNBwueZn0xI=
 github.com/vmihailenco/msgpack v4.0.4+incompatible/go.mod h1:fy3FlTQTDXWkZ7Bh6AcGMlsjHatGryHQYUTf1ShIgkk=
