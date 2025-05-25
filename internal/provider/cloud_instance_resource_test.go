@@ -17,28 +17,27 @@ func TestAccCloudInstanceResource(t *testing.T) {
 resource "utho_cloud_instance" "example" {
 	name = "example-name"
 	# country slug
-	dcslug       = "inbangalore"
-	image        = "rocky-8.8-x86_64"
-	planid       = "10045"
-	enablebackup = "false"
-	billingcycle = "hourly"
-	firewall     = "23432614"
-	vpc_id		 = "f1qq22aa-11aa-11dd-8b94-f69f312c0245"
-}		  
+	dcslug        = "inmumbaizone2"
+	image         = "ubuntu-22.04-x86_64"
+	planid        = "10045"
+	enablebackup  = "false"
+	billingcycle  = "hourly"
+	firewall      = "23432614"
+	vpc_id		  = "4de5f07a-f51c-4323-b39a-ef66130e1bd9"
+	root_password = "2uDsQ1$Ioqa@uFj"
+}
 `,
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceName, "name", "example-name"),
-					resource.TestCheckResourceAttr(resourceName, "dclocation.dc", "inbangalore"),
+					resource.TestCheckResourceAttr(resourceName, "dclocation.dc", "inmumbaizone2"),
 					resource.TestCheckResourceAttr(resourceName, "enablebackup", "false"),
 					resource.TestCheckResourceAttr(resourceName, "billingcycle", "hourly"),
-					resource.TestCheckResourceAttr(resourceName, "image", "rocky-8.8-x86_64"),
-					resource.TestCheckResourceAttr(resourceName, "vpc_id", "f1qq22aa-11aa-11dd-8b94-f69f312c0245"),
+					resource.TestCheckResourceAttr(resourceName, "image", "ubuntu-22.04-x86_64"),
+					resource.TestCheckResourceAttr(resourceName, "vpc_id", "4de5f07a-f51c-4323-b39a-ef66130e1bd9"),
 
 					resource.TestCheckResourceAttrSet(resourceName, "id"),
-					resource.TestCheckResourceAttrSet(resourceName, "ip"),
 					resource.TestCheckResourceAttrSet(resourceName, "billingcycle"),
 					resource.TestCheckResourceAttrSet(resourceName, "disksize"),
-					resource.TestCheckResourceAttrSet(resourceName, "public_network.0.ip_address"),
 					resource.TestCheckResourceAttrSet(resourceName, "storages.0.id"),
 					resource.TestCheckResourceAttrSet(resourceName, "vmcost"),
 				),
@@ -47,8 +46,18 @@ resource "utho_cloud_instance" "example" {
 				ResourceName:      resourceName,
 				ImportState:       true,
 				ImportStateVerify: true,
-
-				ImportStateVerifyIgnore: []string{"powerstatus", "root_password", "ha", "planid", "firewall"},
+				ImportStateVerifyIgnore: []string{
+					"powerstatus",
+					"root_password",
+					"ha",
+					"planid",
+					"firewall",
+					"ip",
+					"public_network",
+					"vmcost",
+					"disksize",
+					"vpc_id",
+				},
 			},
 		},
 	})

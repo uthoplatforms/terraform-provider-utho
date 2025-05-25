@@ -35,7 +35,7 @@ type PricingDataSourceModel struct {
 	Bandwidth      types.String `tfsdk:"bandwidth"`
 	IsFeatured     types.String `tfsdk:"is_featured"`
 	DedicatedVcore types.String `tfsdk:"dedicated_vcore"`
-	Price          types.String `tfsdk:"price"`
+	Price          types.Int64  `tfsdk:"price"`
 	Monthly        types.String `tfsdk:"monthly"`
 }
 
@@ -68,7 +68,7 @@ func (d *ObjectStoragePlanDataSource) Schema(_ context.Context, _ datasource.Sch
 						"bandwidth":       schema.StringAttribute{Computed: true, Description: "bandwidth"},
 						"is_featured":     schema.StringAttribute{Computed: true, Description: "is_featured"},
 						"dedicated_vcore": schema.StringAttribute{Computed: true, Description: "dedicated_vcore"},
-						"price":           schema.StringAttribute{Computed: true, Description: "price"},
+						"price":           schema.Int64Attribute{Computed: true, Description: "price"},
 						"monthly":         schema.StringAttribute{Computed: true, Description: "monthly"},
 					},
 				},
@@ -109,22 +109,22 @@ func (d *ObjectStoragePlanDataSource) Read(ctx context.Context, req datasource.R
 	}
 	// Map response body to model
 	state := ObjectStoragePlanDataSourceModel{}
-	for _, price := range objectStoragePlan {
+	for _, plan := range objectStoragePlan {
 		resourceState := PricingDataSourceModel{
-			ID:             types.StringValue(price.ID),
-			UUID:           types.StringValue(price.UUID),
-			Type:           types.StringValue(price.Type),
-			Slug:           types.StringValue(price.Slug),
-			Name:           types.StringValue(price.Name),
-			Description:    types.StringValue(price.Description),
-			Disk:           types.StringValue(price.Disk),
-			RAM:            types.StringValue(price.RAM),
-			CPU:            types.StringValue(price.CPU),
-			Bandwidth:      types.StringValue(price.Bandwidth),
-			IsFeatured:     types.StringValue(price.IsFeatured),
-			DedicatedVcore: types.StringValue(price.DedicatedVcore),
-			Price:          types.StringValue(price.Price),
-			Monthly:        types.StringValue(price.Monthly),
+			ID:             types.StringValue(plan.ID),
+			UUID:           types.StringValue(plan.UUID),
+			Type:           types.StringValue(plan.Type),
+			Slug:           types.StringValue(plan.Slug),
+			Name:           types.StringValue(plan.Name),
+			Description:    types.StringValue(plan.Description),
+			Disk:           types.StringValue(plan.Disk),
+			RAM:            types.StringValue(plan.RAM),
+			CPU:            types.StringValue(plan.CPU),
+			Bandwidth:      types.StringValue(plan.Bandwidth),
+			IsFeatured:     types.StringValue(plan.IsFeatured),
+			DedicatedVcore: types.StringValue(plan.DedicatedVcore),
+			Price:          types.Int64Value(int64(plan.Price)),
+			Monthly:        types.StringValue(plan.Monthly),
 		}
 		state.Pricing = append(state.Pricing, resourceState)
 	}

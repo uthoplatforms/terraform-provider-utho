@@ -24,13 +24,10 @@ resource "utho_auto_scaling" "example" {
 	planid              = "10045"
 	planname            = "basic"
 	instance_templateid = "none"
-	public_ip_enabled   = true
-	loadbalancers_id    = ""
-	stackid    = "6669341"
-	stackimage = "ubuntu-22.04-x86_64"
-	vpc_id            = ""
-	security_group_id = ""
-	target_groups_id  = ""
+	public_ip_enabled   = "true"
+	stackid            = "6669341"
+	stackimage         = "ubuntu-22.04-x86_64"
+	vpc_id            = "4de5f07a-f51c-4323-b39a-ef66130e1bd9"
 	policies = [
 		{
 		name     = "Policy-16H2jh"
@@ -50,19 +47,33 @@ resource "utho_auto_scaling" "example" {
 					resource.TestCheckResourceAttr(resourceName, "maxsize", "2"),
 					resource.TestCheckResourceAttr(resourceName, "desiredsize", "1"),
 					resource.TestCheckResourceAttr(resourceName, "image", "ubuntu-22.04-x86_64"),
-
+					resource.TestCheckResourceAttr(resourceName, "public_ip_enabled", "true"),
 					resource.TestCheckResourceAttrSet(resourceName, "id"),
-					resource.TestCheckResourceAttrSet(resourceName, "public_ip_enabled"),
 					resource.TestCheckResourceAttrSet(resourceName, "status"),
 					resource.TestCheckResourceAttrSet(resourceName, "userid"),
 					resource.TestCheckResourceAttrSet(resourceName, "dclocation.location"),
 				),
 			},
 			{
-				ResourceName:            resourceName,
-				ImportState:             true,
-				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"loadbalancers_id", "security_group_id", "target_groups_id", "vpc_id"},
+				ResourceName:      resourceName,
+				ImportState:       true,
+				ImportStateVerify: true,
+				ImportStateVerifyIgnore: []string{
+					"loadbalancers_id",
+					"security_group_id",
+					"target_groups_id",
+					"vpc_id",
+					"stackimage",
+					"instances",
+					"load_balancers",
+					"schedules",
+					"security_groups",
+					"target_groups",
+					"vpc",
+					"policies",
+					"plan",
+					"dclocation",
+				},
 			},
 		},
 	})

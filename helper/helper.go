@@ -3,6 +3,8 @@ package helper
 import (
 	"bytes"
 	"context"
+	"crypto/rand"
+	"encoding/base64"
 	"net/http"
 )
 
@@ -30,4 +32,20 @@ func NewUthoRequest(ctx context.Context, method, url string, body []byte, token 
 	}
 
 	return resp, nil
+}
+
+// GeneratePassword generates a random password of the given length.
+func GeneratePassword(length int) (string, error) {
+	byteLen := (length*6 + 7) / 8
+	b := make([]byte, byteLen)
+	_, err := rand.Read(b)
+	if err != nil {
+		return "", err
+	}
+	password := base64.RawURLEncoding.EncodeToString(b)
+	if len(password) > length {
+		password = password[:length]
+	}
+
+	return password, nil
 }

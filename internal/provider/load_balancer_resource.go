@@ -34,22 +34,26 @@ type (
 
 	// LoadbalancerResourceModel is the model implementation.
 	LoadbalancerResourceModel struct {
-		ID            types.String `tfsdk:"id"`
-		Type          types.String `tfsdk:"type"`
-		Dcslug        types.String `tfsdk:"dcslug"`
-		Userid        types.String `tfsdk:"userid"`
-		IP            types.String `tfsdk:"ip"`
-		Name          types.String `tfsdk:"name"`
-		Algorithm     types.String `tfsdk:"algorithm"`
-		Cookie        types.String `tfsdk:"cookie"`
-		Cookiename    types.String `tfsdk:"cookiename"`
-		Redirecthttps types.String `tfsdk:"redirecthttps"`
-		Country       types.String `tfsdk:"country"`
-		Cc            types.String `tfsdk:"cc"`
-		City          types.String `tfsdk:"city"`
-		Backendcount  types.String `tfsdk:"backendcount"`
-		CreatedAt     types.String `tfsdk:"created_at"`
-		Status        types.String `tfsdk:"status"`
+		ID             types.String `tfsdk:"id"`
+		Type           types.String `tfsdk:"type"`
+		Dcslug         types.String `tfsdk:"dcslug"`
+		VpcID          types.String `tfsdk:"vpc_id"`
+		EnablePublicip types.String `tfsdk:"enable_publicip"`
+		Firewall       types.String `tfsdk:"firewall"`
+		Cpumodel       types.String `tfsdk:"cpu_model"`
+		Userid         types.String `tfsdk:"userid"`
+		IP             types.String `tfsdk:"ip"`
+		Name           types.String `tfsdk:"name"`
+		Algorithm      types.String `tfsdk:"algorithm"`
+		Cookie         types.String `tfsdk:"cookie"`
+		Cookiename     types.String `tfsdk:"cookiename"`
+		Redirecthttps  types.String `tfsdk:"redirecthttps"`
+		Country        types.String `tfsdk:"country"`
+		Cc             types.String `tfsdk:"cc"`
+		City           types.String `tfsdk:"city"`
+		Backendcount   types.String `tfsdk:"backendcount"`
+		CreatedAt      types.String `tfsdk:"created_at"`
+		Status         types.String `tfsdk:"status"`
 	}
 
 	RuleResourceModel struct {
@@ -112,6 +116,34 @@ func (s *LoadbalancerResource) Schema(_ context.Context, _ resource.SchemaReques
 					stringplanmodifier.RequiresReplace(),
 				},
 			},
+			"vpc_id": schema.StringAttribute{
+				Required:    true,
+				Description: "VPC ID",
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.RequiresReplace(),
+				},
+			},
+			"enable_publicip": schema.StringAttribute{
+				Optional:    true,
+				Description: "Enable Public ip",
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.RequiresReplace(),
+				},
+			},
+			"firewall": schema.StringAttribute{
+				Optional:    true,
+				Description: "Firewall ID",
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.RequiresReplace(),
+				},
+			},
+			"cpu_model": schema.StringAttribute{
+				Optional:    true,
+				Description: "CPU Model default is 'amd'",
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.RequiresReplace(),
+				},
+			},
 			"id":            schema.StringAttribute{Computed: true, Description: "Id"},
 			"userid":        schema.StringAttribute{Computed: true, Description: "User id"},
 			"ip":            schema.StringAttribute{Computed: true, Description: "Ip"},
@@ -147,11 +179,26 @@ func (s *LoadbalancerResource) Create(ctx context.Context, req resource.CreateRe
 
 	// Generate API request body from plan
 	loadbalancerRequest := utho.CreateLoadblancerParams{
-		Dcslug: plan.Dcslug.ValueString(),
-		Type:   plan.Type.ValueString(),
-		Name:   plan.Name.ValueString(),
+		Dcslug:         plan.Dcslug.ValueString(),
+		Type:           plan.Type.ValueString(),
+		Name:           plan.Name.ValueString(),
+		VpcID:          plan.VpcID.ValueString(),
+		EnablePublicip: plan.EnablePublicip.ValueString(),
+		Firewall:       plan.Firewall.ValueString(),
+		Cpumodel:       plan.Cpumodel.ValueString(),
 	}
 	tflog.Debug(ctx, "send create loadbalancer request")
+	tflog.Debug(ctx, "loadbalancerRequest",
+		map[string]interface{}{
+			"dcslug":          loadbalancerRequest.Dcslug,
+			"type":            loadbalancerRequest.Type,
+			"name":            loadbalancerRequest.Name,
+			"vpc_id":          loadbalancerRequest.VpcID,
+			"enable_publicip": loadbalancerRequest.EnablePublicip,
+			"firewall":        loadbalancerRequest.Firewall,
+			"cpu_model":       loadbalancerRequest.Cpumodel,
+		},
+	)
 
 	createloadbalancer, err := s.client.Loadbalancers().Create(loadbalancerRequest)
 	if err != nil {
@@ -172,22 +219,26 @@ func (s *LoadbalancerResource) Create(ctx context.Context, req resource.CreateRe
 	}
 
 	plan = LoadbalancerResourceModel{
-		ID:            types.StringValue(loadbalancer.ID),
-		Type:          types.StringValue(loadbalancer.Type),
-		Dcslug:        types.StringValue(plan.Dcslug.ValueString()),
-		Userid:        types.StringValue(loadbalancer.Userid),
-		IP:            types.StringValue(loadbalancer.IP),
-		Name:          types.StringValue(loadbalancer.Name),
-		Algorithm:     types.StringValue(loadbalancer.Algorithm),
-		Cookie:        types.StringValue(loadbalancer.Cookie),
-		Cookiename:    types.StringValue(loadbalancer.Cookiename),
-		Redirecthttps: types.StringValue(loadbalancer.Redirecthttps),
-		Country:       types.StringValue(loadbalancer.Country),
-		Cc:            types.StringValue(loadbalancer.Cc),
-		City:          types.StringValue(loadbalancer.City),
-		Backendcount:  types.StringValue(loadbalancer.Backendcount),
-		CreatedAt:     types.StringValue(loadbalancer.CreatedAt),
-		Status:        types.StringValue(loadbalancer.Status),
+		ID:             types.StringValue(loadbalancer.ID),
+		Type:           types.StringValue(loadbalancer.Type),
+		Dcslug:         types.StringValue(plan.Dcslug.ValueString()),
+		VpcID:          types.StringValue(plan.VpcID.ValueString()),
+		EnablePublicip: types.StringValue(plan.EnablePublicip.ValueString()),
+		Firewall:       types.StringValue(plan.Firewall.ValueString()),
+		Cpumodel:       types.StringValue(plan.Cpumodel.ValueString()),
+		Userid:         types.StringValue(loadbalancer.Userid),
+		IP:             types.StringValue(loadbalancer.IP),
+		Name:           types.StringValue(loadbalancer.Name),
+		Algorithm:      types.StringValue(loadbalancer.Algorithm),
+		Cookie:         types.StringValue(loadbalancer.Cookie),
+		Cookiename:     types.StringValue(loadbalancer.Cookiename),
+		Redirecthttps:  types.StringValue(loadbalancer.Redirecthttps),
+		Country:        types.StringValue(loadbalancer.Country),
+		Cc:             types.StringValue(loadbalancer.Cc),
+		City:           types.StringValue(loadbalancer.City),
+		Backendcount:   types.StringValue(loadbalancer.Backendcount),
+		CreatedAt:      types.StringValue(loadbalancer.CreatedAt),
+		Status:         types.StringValue(loadbalancer.Status),
 	}
 
 	// Set state to fully populated data
@@ -223,22 +274,26 @@ func (s *LoadbalancerResource) Read(ctx context.Context, req resource.ReadReques
 	}
 
 	state = LoadbalancerResourceModel{
-		ID:            types.StringValue(loadbalancer.ID),
-		Type:          types.StringValue(loadbalancer.Type),
-		Dcslug:        types.StringValue(state.Dcslug.ValueString()),
-		Userid:        types.StringValue(loadbalancer.Userid),
-		IP:            types.StringValue(loadbalancer.IP),
-		Name:          types.StringValue(loadbalancer.Name),
-		Algorithm:     types.StringValue(loadbalancer.Algorithm),
-		Cookie:        types.StringValue(loadbalancer.Cookie),
-		Cookiename:    types.StringValue(loadbalancer.Cookiename),
-		Redirecthttps: types.StringValue(loadbalancer.Redirecthttps),
-		Country:       types.StringValue(loadbalancer.Country),
-		Cc:            types.StringValue(loadbalancer.Cc),
-		City:          types.StringValue(loadbalancer.City),
-		Backendcount:  types.StringValue(loadbalancer.Backendcount),
-		CreatedAt:     types.StringValue(loadbalancer.CreatedAt),
-		Status:        types.StringValue(loadbalancer.Status),
+		ID:             types.StringValue(loadbalancer.ID),
+		Type:           types.StringValue(loadbalancer.Type),
+		Dcslug:         types.StringValue(state.Dcslug.ValueString()),
+		VpcID:          types.StringValue(state.VpcID.ValueString()),
+		EnablePublicip: types.StringValue(state.EnablePublicip.ValueString()),
+		Firewall:       types.StringValue(state.Firewall.ValueString()),
+		Cpumodel:       types.StringValue(state.Cpumodel.ValueString()),
+		Userid:         types.StringValue(loadbalancer.Userid),
+		IP:             types.StringValue(loadbalancer.IP),
+		Name:           types.StringValue(loadbalancer.Name),
+		Algorithm:      types.StringValue(loadbalancer.Algorithm),
+		Cookie:         types.StringValue(loadbalancer.Cookie),
+		Cookiename:     types.StringValue(loadbalancer.Cookiename),
+		Redirecthttps:  types.StringValue(loadbalancer.Redirecthttps),
+		Country:        types.StringValue(loadbalancer.Country),
+		Cc:             types.StringValue(loadbalancer.Cc),
+		City:           types.StringValue(loadbalancer.City),
+		Backendcount:   types.StringValue(loadbalancer.Backendcount),
+		CreatedAt:      types.StringValue(loadbalancer.CreatedAt),
+		Status:         types.StringValue(loadbalancer.Status),
 	}
 
 	// Set refreshed state

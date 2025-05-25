@@ -34,18 +34,24 @@ type CloudInstanceResource struct {
 }
 
 type CloudInstanceResourceModel struct {
-	Name         types.String `tfsdk:"name"`
-	Dcslug       types.String `tfsdk:"dcslug"`
-	Image        types.String `tfsdk:"image"`
-	Planid       types.String `tfsdk:"planid"`
-	Vpcid        types.String `tfsdk:"vpc_id"`
-	RootPassword types.String `tfsdk:"root_password"`
-	Firewall     types.String `tfsdk:"firewall"`
-	Enablebackup types.Bool   `tfsdk:"enablebackup"`
-	Backupid     types.String `tfsdk:"backupid"`
-	Snapshotid   types.String `tfsdk:"snapshotid"`
-	Sshkeys      types.String `tfsdk:"sshkeys"`
-	Billingcycle types.String `tfsdk:"billingcycle"`
+	Name           types.String `tfsdk:"name"`
+	Dcslug         types.String `tfsdk:"dcslug"`
+	Image          types.String `tfsdk:"image"`
+	Planid         types.String `tfsdk:"planid"`
+	Vpcid          types.String `tfsdk:"vpc_id"`
+	RootPassword   types.String `tfsdk:"root_password"`
+	Firewall       types.String `tfsdk:"firewall"`
+	Enablebackup   types.Bool   `tfsdk:"enablebackup"`
+	Backupid       types.String `tfsdk:"backupid"`
+	Snapshotid     types.String `tfsdk:"snapshotid"`
+	Sshkeys        types.String `tfsdk:"sshkeys"`
+	Billingcycle   types.String `tfsdk:"billingcycle"`
+	EnablePublicip types.String `tfsdk:"enablepublicip"`
+	SubnetRequired types.String `tfsdk:"subnetrequired"`
+	Cpumodel       types.String `tfsdk:"cpumodel"`
+	Auth           types.String `tfsdk:"auth"`
+	Support        types.String `tfsdk:"support"`
+	Management     types.String `tfsdk:"management"`
 	////////////////////////
 	ID                types.String  `tfsdk:"id"`
 	IP                types.String  `tfsdk:"ip"`
@@ -161,19 +167,26 @@ func (d *CloudInstanceResource) Configure(_ context.Context, req resource.Config
 // Schema defines the schema for the resource.
 func (s *CloudInstanceResource) Schema(_ context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{Attributes: map[string]schema.Attribute{
-		"id":                schema.StringAttribute{Computed: true, Description: "Cloud id"},
-		"name":              schema.StringAttribute{Required: true, Description: "Give a name to your cloud server eg: myweb1.server.com", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
-		"dcslug":            schema.StringAttribute{Required: true, MarkdownDescription: "Provide Zone dcslug eg: innoida. You can find a list of available dcslug on [Utho API documentation](https://utho.com/api-docs/#api-Cloud-Servers-AVAILABLEDCZONES).", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
-		"image":             schema.StringAttribute{Required: true, Description: "Image name eg: centos-7.4-x86_64", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
-		"planid":            schema.StringAttribute{Optional: true, MarkdownDescription: "The unique ID that identifies the type of Instance plane. You can find a list of available IDs on [Utho API documentation](https://utho.com/api-docs/#api-Cloud-Servers-GETPLANS).", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
-		"vpc_id":            schema.StringAttribute{Optional: true, MarkdownDescription: "The unique ID that identifies the VPC. You can list all VPCs id on [Utho API documentation](https://utho.com/api-docs/#api-VPC-VPCList).", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
-		"firewall":          schema.StringAttribute{Optional: true, Description: "Firewall Id", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
-		"enablebackup":      schema.BoolAttribute{Optional: true, Description: "Please pass value on to enable weekly backups*", PlanModifiers: []planmodifier.Bool{boolplanmodifier.RequiresReplace()}},
-		"billingcycle":      schema.StringAttribute{Optional: true, Description: "If you required billing cycle other then hourly billing you can pass value as eg: monthly, 3month, 6month, 12month. by default its selected as hourly", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
-		"backupid":          schema.StringAttribute{Optional: true, Description: "Provide a backupid if you have a backup in same datacenter location.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
-		"snapshotid":        schema.StringAttribute{Optional: true, Description: "Provide a snapshot id if you have a snapshot in same datacenter location.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
-		"sshkeys":           schema.StringAttribute{Optional: true, Description: "Provide SSH Key ids or pass multiple SSH Key ids with commans (eg: 432,331).", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
-		"root_password":     schema.StringAttribute{Computed: true, Description: "Root Password"},
+		"id":             schema.StringAttribute{Computed: true, Description: "Cloud id"},
+		"name":           schema.StringAttribute{Required: true, Description: "Give a name to your cloud server eg: myweb1.server.com", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
+		"dcslug":         schema.StringAttribute{Required: true, MarkdownDescription: "Provide Zone dcslug eg: innoida. You can find a list of available dcslug on [Utho API documentation](https://utho.com/api-docs/#api-Cloud-Servers-AVAILABLEDCZONES).", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
+		"image":          schema.StringAttribute{Required: true, Description: "Image name eg: centos-7.4-x86_64", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
+		"root_password":  schema.StringAttribute{Required: true, Description: "Root Password"},
+		"planid":         schema.StringAttribute{Optional: true, MarkdownDescription: "The unique ID that identifies the type of Instance plane. You can find a list of available IDs on [Utho API documentation](https://utho.com/api-docs/#api-Cloud-Servers-GETPLANS).", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
+		"vpc_id":         schema.StringAttribute{Optional: true, MarkdownDescription: "The unique ID that identifies the VPC. You can list all VPCs id on [Utho API documentation](https://utho.com/api-docs/#api-VPC-VPCList).", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
+		"firewall":       schema.StringAttribute{Optional: true, Description: "Firewall Id", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
+		"enablebackup":   schema.BoolAttribute{Optional: true, Description: "Please pass value on to enable weekly backups*", PlanModifiers: []planmodifier.Bool{boolplanmodifier.RequiresReplace()}},
+		"billingcycle":   schema.StringAttribute{Optional: true, Description: "If you required billing cycle other then hourly billing you can pass value as eg: monthly, 3month, 6month, 12month. by default its selected as hourly", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
+		"backupid":       schema.StringAttribute{Optional: true, Description: "Provide a backupid if you have a backup in same datacenter location.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
+		"snapshotid":     schema.StringAttribute{Optional: true, Description: "Provide a snapshot id if you have a snapshot in same datacenter location.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
+		"sshkeys":        schema.StringAttribute{Optional: true, Description: "Provide SSH Key ids or pass multiple SSH Key ids with commans (eg: 432,331).", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
+		"enablepublicip": schema.StringAttribute{Optional: true, Description: "Enable Public IP", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
+		"subnetrequired": schema.StringAttribute{Optional: true, Description: "Subnet Required", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
+		"cpumodel":       schema.StringAttribute{Optional: true, Description: "CPU Model", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
+		"auth":           schema.StringAttribute{Optional: true, Description: "Authentication", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
+		"support":        schema.StringAttribute{Optional: true, Description: "Support", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
+		"management":     schema.StringAttribute{Optional: true, Description: "Management", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
+
 		"ip":                schema.StringAttribute{Computed: true, Description: "Ip"},
 		"cpu":               schema.StringAttribute{Computed: true, Description: "Cpu"},
 		"ram":               schema.StringAttribute{Computed: true, Description: "Ram"},
@@ -313,20 +326,27 @@ func (s *CloudInstanceResource) Create(ctx context.Context, req resource.CreateR
 	}
 	hostName := []utho.CloudHostname{}
 	hostName = append(hostName, utho.CloudHostname{Hostname: plan.Name.ValueString()})
+
 	// Generate API request body from plan
 	cloudinstanceRequest := utho.CreateCloudInstanceParams{
-		Dcslug:       plan.Dcslug.ValueString(),
-		Image:        plan.Image.ValueString(),
-		Planid:       plan.Planid.ValueString(),
-		VpcId:        plan.Vpcid.ValueString(),
-		RootPassword: plan.RootPassword.ValueString(),
-		Firewall:     plan.Firewall.ValueString(),
-		Enablebackup: enableBackupMapStrBool[plan.Enablebackup.ValueBool()],
-		Billingcycle: plan.Billingcycle.ValueString(),
-		Backupid:     plan.Backupid.ValueString(),
-		Snapshotid:   plan.Snapshotid.ValueString(),
-		Sshkeys:      plan.Sshkeys.ValueString(),
-		Cloud:        hostName,
+		Dcslug:         plan.Dcslug.ValueString(),
+		Image:          plan.Image.ValueString(),
+		Planid:         plan.Planid.ValueString(),
+		VpcId:          plan.Vpcid.ValueString(),
+		RootPassword:   plan.RootPassword.ValueString(),
+		Firewall:       plan.Firewall.ValueString(),
+		Enablebackup:   enableBackupMapStrBool[plan.Enablebackup.ValueBool()],
+		Billingcycle:   plan.Billingcycle.ValueString(),
+		Backupid:       plan.Backupid.ValueString(),
+		Snapshotid:     plan.Snapshotid.ValueString(),
+		Sshkeys:        plan.Sshkeys.ValueString(),
+		Cloud:          hostName,
+		EnablePublicip: plan.EnablePublicip.ValueString(),
+		SubnetRequired: plan.SubnetRequired.ValueString(),
+		Cpumodel:       plan.Cpumodel.ValueString(),
+		Auth:           plan.Auth.ValueString(),
+		Support:        plan.Support.ValueString(),
+		Management:     plan.Management.ValueString(),
 	}
 
 	tflog.Debug(ctx, "send create cloud instance request")
@@ -499,7 +519,7 @@ func (s *CloudInstanceResource) Create(ctx context.Context, req resource.CreateR
 			Size:      types.Int64Value(int64(v.Size)),
 			DiskUsed:  types.StringValue(v.DiskUsed),
 			DiskFree:  types.StringValue(v.DiskFree),
-			DiskUsedp: types.StringValue(fmt.Sprintf("%d", v.DiskUsedp)),
+			DiskUsedp: types.StringValue(v.DiskUsedp),
 			Bus:       types.StringValue(v.Bus),
 			Type:      types.StringValue(v.Type),
 		}
@@ -649,7 +669,10 @@ func (s *CloudInstanceResource) Read(ctx context.Context, req resource.ReadReque
 	}
 	if !state.Vpcid.IsNull() {
 		state.Vpcid = types.StringValue(state.Vpcid.ValueString())
+	} else {
+		state.Vpcid = types.StringValue(cloudinstance.V4Private.VpcID)
 	}
+
 	if !state.RootPassword.IsNull() {
 		state.RootPassword = types.StringValue(state.RootPassword.ValueString())
 	}
@@ -667,6 +690,24 @@ func (s *CloudInstanceResource) Read(ctx context.Context, req resource.ReadReque
 	}
 	if !state.Sshkeys.IsNull() {
 		state.Sshkeys = types.StringValue(state.Sshkeys.ValueString())
+	}
+	if !state.EnablePublicip.IsNull() {
+		state.EnablePublicip = types.StringValue(state.EnablePublicip.ValueString())
+	}
+	if !state.SubnetRequired.IsNull() {
+		state.SubnetRequired = types.StringValue(state.SubnetRequired.ValueString())
+	}
+	if !state.Cpumodel.IsNull() {
+		state.Cpumodel = types.StringValue(state.Cpumodel.ValueString())
+	}
+	if !state.Auth.IsNull() {
+		state.Auth = types.StringValue(state.Auth.ValueString())
+	}
+	if !state.Support.IsNull() {
+		state.Support = types.StringValue(state.Support.ValueString())
+	}
+	if !state.Management.IsNull() {
+		state.Management = types.StringValue(state.Management.ValueString())
 	}
 
 	// Set refreshed state
@@ -772,7 +813,7 @@ func (s *CloudInstanceResource) Read(ctx context.Context, req resource.ReadReque
 			Size:      types.Int64Value(int64(v.Size)),
 			DiskUsed:  types.StringValue(v.DiskUsed),
 			DiskFree:  types.StringValue(v.DiskFree),
-			DiskUsedp: types.StringValue(fmt.Sprintf("%d", v.DiskUsedp)),
+			DiskUsedp: types.StringValue(v.DiskUsedp),
 			Bus:       types.StringValue(v.Bus),
 			Type:      types.StringValue(v.Type),
 		}

@@ -26,7 +26,7 @@ resource "utho_dns_record" "example" {
 	porttype = "TCP"
 	port     = "5060"
 	priority = "10"
-	wight    = "100"
+	weight    = "100"
 }
 `,
 				Check: resource.ComposeAggregateTestCheckFunc(
@@ -39,7 +39,7 @@ resource "utho_dns_record" "example" {
 					resource.TestCheckResourceAttr(resourceName, "porttype", "TCP"),
 					resource.TestCheckResourceAttr(resourceName, "port", "5060"),
 					resource.TestCheckResourceAttr(resourceName, "priority", "10"),
-					resource.TestCheckResourceAttr(resourceName, "wight", "100"),
+					resource.TestCheckResourceAttr(resourceName, "weight", "100"),
 
 					resource.TestCheckResourceAttrSet(resourceName, "id"),
 				),

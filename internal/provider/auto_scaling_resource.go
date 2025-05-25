@@ -9,7 +9,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/boolplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
@@ -56,7 +55,7 @@ type AutoScalingResourceModel struct {
 	StoppedAt          types.String  `tfsdk:"stopped_at"`
 	StartedAt          types.String  `tfsdk:"started_at"`
 	DeletedAt          types.String  `tfsdk:"deleted_at"`
-	PublicIPEnabled    types.String  `tfsdk:"public_ip_enabled"`
+	PublicIPEnabled    types.Bool    `tfsdk:"public_ip_enabled"`
 	CooldownTill       types.String  `tfsdk:"cooldown_till"`
 	Backupid           types.String  `tfsdk:"backupid"`
 	Stackid            types.String  `tfsdk:"stackid"`
@@ -201,7 +200,7 @@ func (s *AutoScalingResource) Schema(_ context.Context, _ resource.SchemaRequest
 				PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()},
 			},
 			"public_ip_enabled": schema.BoolAttribute{Required: true,
-				PlanModifiers: []planmodifier.Bool{boolplanmodifier.RequiresReplace()},
+				PlanModifiers: []planmodifier.Bool{},
 			},
 			"stackid": schema.StringAttribute{Required: true,
 				PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()},
@@ -209,7 +208,7 @@ func (s *AutoScalingResource) Schema(_ context.Context, _ resource.SchemaRequest
 			"stackimage": schema.StringAttribute{Required: true,
 				PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()},
 			},
-			"vpc_id": schema.StringAttribute{Optional: true,
+			"vpc_id": schema.StringAttribute{Required: true,
 				PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()},
 			},
 			"loadbalancers_id": schema.StringAttribute{Optional: true,
@@ -435,9 +434,10 @@ func (s *AutoScalingResource) Create(ctx context.Context, req resource.CreateReq
 		Desiredsize:        plan.Desiredsize.ValueString(),
 		Planname:           plan.Planname.ValueString(),
 		InstanceTemplateid: plan.InstanceTemplateid.ValueString(),
-		PublicIPEnabled:    plan.PublicIPEnabled.ValueString(),
+		PublicIPEnabled:    plan.PublicIPEnabled.ValueBool(),
 		Vpc:                plan.VpcID.ValueString(),
 		LoadBalancers:      plan.LoadbalancersID.ValueString(),
+		Stack:              plan.Stackid.ValueString(),
 		Stackid:            plan.Stackid.ValueString(),
 		Stackimage:         plan.Stackimage.ValueString(),
 		Policies:           policies,
@@ -465,11 +465,6 @@ func (s *AutoScalingResource) Create(ctx context.Context, req resource.CreateReq
 		return
 	}
 
-	// Map response body to schema and populate Computed attribute values
-	// publicIPEnabledpMapStrBool := map[string]bool{
-	// 	"0": false,
-	// 	"1": true,
-	// }
 	osDiskSize, _ := strconv.Atoi(getAutoScaling.Plan.Disk)
 
 	policiesModel := []PolicyModel{}
@@ -509,6 +504,15 @@ func (s *AutoScalingResource) Create(ctx context.Context, req resource.CreateReq
 		plan.TargetGroupsID = types.StringValue(plan.TargetGroupsID.ValueString())
 	}
 
+	publicIPEnabled, err := strconv.ParseBool(getAutoScaling.PublicIPEnabled)
+	if err != nil {
+		resp.Diagnostics.AddError(
+			"Error parsing PublicIPEnabled",
+			fmt.Sprintf("Could not parse PublicIPEnabled value '%s' for autoscaling %s: %s", getAutoScaling.PublicIPEnabled, getAutoScaling.ID, err.Error()),
+		)
+		return
+	}
+
 	plan.ID = types.StringValue(strconv.Itoa(autoscaling.ID))
 	plan.Dcslug = types.StringValue(plan.Dcslug.ValueString())
 	plan.Userid = types.StringValue(getAutoScaling.Userid)
@@ -528,14 +532,15 @@ func (s *AutoScalingResource) Create(ctx context.Context, req resource.CreateReq
 	plan.StoppedAt = types.StringValue(getAutoScaling.StoppedAt)
 	plan.StartedAt = types.StringValue(getAutoScaling.StartedAt)
 	plan.DeletedAt = types.StringValue(getAutoScaling.DeletedAt)
-	plan.PublicIPEnabled = types.StringValue(getAutoScaling.PublicIPEnabled)
+	plan.PublicIPEnabled = types.BoolValue(publicIPEnabled)
 	plan.CooldownTill = types.StringValue(getAutoScaling.CooldownTill)
 	plan.Backupid = types.StringValue(getAutoScaling.Backupid)
-	plan.Stackid = types.StringValue(getAutoScaling.Stack)
+	// TODO
+	plan.Stackid = types.StringValue(plan.Stackid.ValueString())
 	plan.Stackimage = types.StringValue(getAutoScaling.Image)
 	plan.OsDiskSize = types.Int64Value(int64(osDiskSize * 10))
 	plan.Policies = policiesModel
-	// VpcID:              types.StringValue(getAutoScaling.Vpc[0].ID),
+	plan.VpcID = types.StringValue(getAutoScaling.Vpc[0].ID)
 
 	// Set state to fully populated data
 	diags = resp.State.Set(ctx, plan)
@@ -703,11 +708,6 @@ func (s *AutoScalingResource) Read(ctx context.Context, req resource.ReadRequest
 		return
 	}
 
-	// Overwrite items with refreshed state
-	// publicIPEnabledpMapStrBool := map[string]bool{
-	// 	"0": false,
-	// 	"1": true,
-	// }
 	osDiskSize, _ := strconv.Atoi(getAutoScaling.Plan.Disk)
 
 	policiesModel := []PolicyModel{}
@@ -747,6 +747,14 @@ func (s *AutoScalingResource) Read(ctx context.Context, req resource.ReadRequest
 		state.TargetGroupsID = types.StringValue(state.TargetGroupsID.ValueString())
 	}
 
+	publicIPEnabled, err := strconv.ParseBool(getAutoScaling.PublicIPEnabled)
+	if err != nil {
+		resp.Diagnostics.AddError(
+			"Error parsing PublicIPEnabled",
+			fmt.Sprintf("Could not parse PublicIPEnabled value '%s' for autoscaling %s: %s", getAutoScaling.PublicIPEnabled, getAutoScaling.ID, err.Error()),
+		)
+		return
+	}
 	state.ID = types.StringValue(getAutoScaling.ID)
 	state.Dcslug = types.StringValue(getAutoScaling.Dcslug)
 	state.Userid = types.StringValue(getAutoScaling.Userid)
@@ -766,14 +774,14 @@ func (s *AutoScalingResource) Read(ctx context.Context, req resource.ReadRequest
 	state.StoppedAt = types.StringValue(getAutoScaling.StoppedAt)
 	state.StartedAt = types.StringValue(getAutoScaling.StartedAt)
 	state.DeletedAt = types.StringValue(getAutoScaling.DeletedAt)
-	state.PublicIPEnabled = types.StringValue(getAutoScaling.PublicIPEnabled)
+	state.PublicIPEnabled = types.BoolValue(publicIPEnabled)
 	state.CooldownTill = types.StringValue(getAutoScaling.CooldownTill)
 	state.Backupid = types.StringValue(getAutoScaling.Backupid)
 	state.Stackid = types.StringValue(getAutoScaling.Stack)
 	state.Stackimage = types.StringValue(getAutoScaling.Image)
 	state.OsDiskSize = types.Int64Value(int64(osDiskSize * 10))
 	state.Policies = policiesModel
-	// VpcID:              types.StringValue(getAutoScaling.Vpc[0].ID),
+	state.VpcID = types.StringValue(getAutoScaling.Vpc[0].ID)
 
 	// Set refreshed state
 	diags = resp.State.Set(ctx, &state)

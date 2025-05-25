@@ -15,9 +15,13 @@ func TestAccLoadBalancerResource(t *testing.T) {
 			{
 				Config: providerConfig + `
 resource "utho_loadbalancer" "example" {
-	dcslug = "inmumbaizone2"
-	name   = "example-utho"
-	type   = "application"
+  dcslug          = "inmumbaizone2"
+  name            = "example-utho"
+  type            = "application"
+  vpc_id          = "4de5f07a-f51c-4323-b39a-ef66130e1bd9"
+  firewall        = "23432614"
+  cpu_model       = "amd"
+  enable_publicip = "true"
 }
 `,
 				Check: resource.ComposeAggregateTestCheckFunc(
