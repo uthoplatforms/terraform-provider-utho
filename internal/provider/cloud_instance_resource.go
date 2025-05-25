@@ -46,7 +46,7 @@ type CloudInstanceResourceModel struct {
 	Snapshotid     types.String `tfsdk:"snapshotid"`
 	Sshkeys        types.String `tfsdk:"sshkeys"`
 	Billingcycle   types.String `tfsdk:"billingcycle"`
-	EnablePublicip types.String `tfsdk:"enablepublicip"`
+	EnablePublicip types.String `tfsdk:"enable_publicip"`
 	SubnetRequired types.String `tfsdk:"subnetrequired"`
 	Cpumodel       types.String `tfsdk:"cpumodel"`
 	Auth           types.String `tfsdk:"auth"`
@@ -167,25 +167,25 @@ func (d *CloudInstanceResource) Configure(_ context.Context, req resource.Config
 // Schema defines the schema for the resource.
 func (s *CloudInstanceResource) Schema(_ context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{Attributes: map[string]schema.Attribute{
-		"id":             schema.StringAttribute{Computed: true, Description: "Cloud id"},
-		"name":           schema.StringAttribute{Required: true, Description: "Give a name to your cloud server eg: myweb1.server.com", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
-		"dcslug":         schema.StringAttribute{Required: true, MarkdownDescription: "Provide Zone dcslug eg: innoida. You can find a list of available dcslug on [Utho API documentation](https://utho.com/api-docs/#api-Cloud-Servers-AVAILABLEDCZONES).", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
-		"image":          schema.StringAttribute{Required: true, Description: "Image name eg: centos-7.4-x86_64", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
-		"root_password":  schema.StringAttribute{Required: true, Description: "Root Password"},
-		"planid":         schema.StringAttribute{Optional: true, MarkdownDescription: "The unique ID that identifies the type of Instance plane. You can find a list of available IDs on [Utho API documentation](https://utho.com/api-docs/#api-Cloud-Servers-GETPLANS).", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
-		"vpc_id":         schema.StringAttribute{Optional: true, MarkdownDescription: "The unique ID that identifies the VPC. You can list all VPCs id on [Utho API documentation](https://utho.com/api-docs/#api-VPC-VPCList).", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
-		"firewall":       schema.StringAttribute{Optional: true, Description: "Firewall Id", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
-		"enablebackup":   schema.BoolAttribute{Optional: true, Description: "Please pass value on to enable weekly backups*", PlanModifiers: []planmodifier.Bool{boolplanmodifier.RequiresReplace()}},
-		"billingcycle":   schema.StringAttribute{Optional: true, Description: "If you required billing cycle other then hourly billing you can pass value as eg: monthly, 3month, 6month, 12month. by default its selected as hourly", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
-		"backupid":       schema.StringAttribute{Optional: true, Description: "Provide a backupid if you have a backup in same datacenter location.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
-		"snapshotid":     schema.StringAttribute{Optional: true, Description: "Provide a snapshot id if you have a snapshot in same datacenter location.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
-		"sshkeys":        schema.StringAttribute{Optional: true, Description: "Provide SSH Key ids or pass multiple SSH Key ids with commans (eg: 432,331).", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
-		"enablepublicip": schema.StringAttribute{Optional: true, Description: "Enable Public IP", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
-		"subnetrequired": schema.StringAttribute{Optional: true, Description: "Subnet Required", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
-		"cpumodel":       schema.StringAttribute{Optional: true, Description: "CPU Model", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
-		"auth":           schema.StringAttribute{Optional: true, Description: "Authentication", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
-		"support":        schema.StringAttribute{Optional: true, Description: "Support", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
-		"management":     schema.StringAttribute{Optional: true, Description: "Management", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
+		"id":              schema.StringAttribute{Computed: true, Description: "Cloud id"},
+		"name":            schema.StringAttribute{Required: true, Description: "Give a name to your cloud server eg: myweb1.server.com", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
+		"dcslug":          schema.StringAttribute{Required: true, MarkdownDescription: "Provide Zone dcslug eg: innoida. You can find a list of available dcslug on [Utho API documentation](https://utho.com/api-docs/#api-Cloud-Servers-AVAILABLEDCZONES).", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
+		"image":           schema.StringAttribute{Required: true, Description: "Image name eg: centos-7.4-x86_64", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
+		"root_password":   schema.StringAttribute{Required: true, Description: "Root Password", Sensitive: true, PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
+		"planid":          schema.StringAttribute{Optional: true, MarkdownDescription: "The unique ID that identifies the type of Instance plane. You can find a list of available IDs on [Utho API documentation](https://utho.com/api-docs/#api-Cloud-Servers-GETPLANS).", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
+		"vpc_id":          schema.StringAttribute{Optional: true, MarkdownDescription: "The unique ID that identifies the VPC. You can list all VPCs id on [Utho API documentation](https://utho.com/api-docs/#api-VPC-VPCList).", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
+		"firewall":        schema.StringAttribute{Optional: true, Description: "Firewall Id", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
+		"enablebackup":    schema.BoolAttribute{Optional: true, Description: "Please pass value on to enable weekly backups*", PlanModifiers: []planmodifier.Bool{boolplanmodifier.RequiresReplace()}},
+		"billingcycle":    schema.StringAttribute{Optional: true, Description: "If you required billing cycle other then hourly billing you can pass value as eg: monthly, 3month, 6month, 12month. by default its selected as hourly", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
+		"backupid":        schema.StringAttribute{Optional: true, Description: "Provide a backupid if you have a backup in same datacenter location.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
+		"snapshotid":      schema.StringAttribute{Optional: true, Description: "Provide a snapshot id if you have a snapshot in same datacenter location.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
+		"sshkeys":         schema.StringAttribute{Optional: true, Description: "Provide SSH Key ids or pass multiple SSH Key ids with commans (eg: 432,331).", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
+		"enable_publicip": schema.StringAttribute{Optional: true, Description: "Enable Public IP", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
+		"subnetrequired":  schema.StringAttribute{Optional: true, Description: "Subnet Required", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
+		"cpumodel":        schema.StringAttribute{Optional: true, Description: "CPU Model", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
+		"auth":            schema.StringAttribute{Optional: true, Description: "Authentication", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
+		"support":         schema.StringAttribute{Optional: true, Description: "Support", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
+		"management":      schema.StringAttribute{Optional: true, Description: "Management", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
 
 		"ip":                schema.StringAttribute{Computed: true, Description: "Ip"},
 		"cpu":               schema.StringAttribute{Computed: true, Description: "Cpu"},
