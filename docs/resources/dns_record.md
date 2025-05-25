@@ -26,7 +26,7 @@ resource "utho_dns_record" "example" {
   porttype = "TCP"
   port     = "5060"
   priority = "10"
-  wight    = "100"
+  weight    = "100"
 }
 ```
 

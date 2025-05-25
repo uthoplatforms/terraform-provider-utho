@@ -8,6 +8,8 @@ docs:
 	@go generate ./...
 debug:
 	go install . ;TF_LOG=DEBUG terraform -chdir='tf' plan -no-color > log.txt
+debug-apply:
+	go install . ;TF_LOG=DEBUG terraform -chdir='tf' apply -auto-approve -no-color > log.txt
 tidy:
 	go fmt ./...
 	go mod tidy -v
