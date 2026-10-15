@@ -52,7 +52,7 @@ func (r *LoadBalancerResource) Schema(_ context.Context, _ resource.SchemaReques
 			"type":            schema.StringAttribute{Required: true, Description: "Load balancer type: network or application.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
 			"dcslug":          schema.StringAttribute{Required: true, Description: "Data center slug.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
 			"enable_publicip": schema.StringAttribute{Required: true, Description: "Enable public IP: true or false."},
-			"vpc":             schema.StringAttribute{Optional: true, Description: "Subnet ID to deploy the load balancer in.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
+			"vpc":             schema.StringAttribute{Optional: true, Description: "Subnet ID (not VPC ID) to deploy the load balancer in. Despite the field name, this accepts a subnet UUID. The Utho API may return null for this field after creation — Terraform state retains the configured value.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
 			"firewall":        schema.StringAttribute{Optional: true, Description: "Security group ID to attach.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
 		},
 	}
@@ -363,8 +363,8 @@ func (r *LBACLResource) Schema(_ context.Context, _ resource.SchemaRequest, resp
 			"loadbalancer_id": schema.StringAttribute{Required: true, Description: "Load balancer ID.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
 			"frontend_id":     schema.StringAttribute{Required: true, Description: "Frontend ID to attach this ACL rule to."},
 			"name":            schema.StringAttribute{Required: true, Description: "ACL rule name."},
-			"condition_type":  schema.StringAttribute{Required: true, Description: "Condition type: host, url_path, url_path_regex, http_method, http_user_agent, http_referer."},
-			"value":           schema.StringAttribute{Required: true, Description: "ACL rule value as JSON string."},
+			"condition_type":  schema.StringAttribute{Required: true, Description: "ACL condition type. Accepted values: host, url_path, url_path_regex, http_user_agent, http_referer. Note: http_method is not currently supported by the Utho API."},
+			"value":           schema.StringAttribute{Required: true, Description: "ACL rule value as a JSON string. Format depends on condition_type: host: {\"host\": \"example.com\"}, url_path: {\"path\": \"/api\"}, url_path_regex: {\"regex\": \"/api/.*\"}, http_user_agent: {\"user_agent\": \"Mozilla\"}, http_referer: {\"referer\": \"example.com\"}."},
 		},
 	}
 }

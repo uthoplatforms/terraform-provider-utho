@@ -158,16 +158,16 @@ terraform import utho_autoscaling.web <asg-id>
 | `minsize`          | String | Yes      | Minimum instances. Can be updated in place. |
 | `maxsize`          | String | Yes      | Maximum instances. Can be updated in place. |
 | `desiredsize`      | String | Yes      | Desired instances. Can be updated in place. |
-| `planid`           | String | Yes      | Plan ID. Changing forces new resource. |
-| `planname`         | String | Yes      | Plan slug. Changing forces new resource. |
+| `planid`           | String | Yes      | Plan ID for the instance size (e.g. `10404`). Use the `utho_cloud_plans` data source to find available plan IDs for your `dcslug`. Changing forces new resource. |
+| `planname`         | String | Yes      | Plan name label corresponding to `planid` (e.g. `basic`). This is a display label sent alongside `planid` — the API does not cross-validate them. Use the `name` field from `utho_cloud_plans` data source. Changing forces new resource. |
 | `os_disk_size`     | Number | Yes      | Disk size in GB. Changing forces new resource. |
 | `public_ip_enabled`| Number | Yes      | Enable public IP: `1` or `0`. |
 | `policies`         | List   | Yes      | Scaling policies. At least 1 required. |
-| `snapshotid`       | String | No       | Snapshot ID. Required if not using stack. |
-| `stack`            | String | No       | Stack ID. Required if not using snapshot. |
-| `stackid`          | String | No       | Stack ID (same as stack). |
-| `stackimage`       | String | No       | Stack image slug. |
-| `image_name`       | String | No       | Image or snapshot name. |
+|        | String | No       | Snapshot ID. **Required** when using snapshot-based deployment. Mutually exclusive with stack deployment. When set, also set  to the snapshot name. |
+|             | String | No       | Stack slug. **Required** when using stack-based deployment. Mutually exclusive with snapshot deployment. |
+|           | String | No       | Stack ID. **Required** when using stack-based deployment. Set alongside , , and . |
+|        | String | No       | Stack image slug. **Required** when using stack-based deployment. Also set  to the same value. |
+|        | String | No       | Boot image name. **Required** for both snapshot and stack deployment. For snapshot: set to snapshot name. For stack: set to stack image slug (same as ). |
 | `vpc`              | String | No       | VPC subnet ID. |
 | `load_balancers`   | String | No       | Load balancer ID. Can be updated in place. |
 | `security_groups`  | String | No       | Security group ID. Can be updated in place. |
@@ -210,7 +210,10 @@ terraform import utho_autoscaling.web <asg-id>
 
 ## Notes
 
-- Either `snapshotid` or `stack`+`stackid`+`stackimage` must be provided.
+- **Boot source is required** — either snapshot or stack deployment must be configured:
+  - **Snapshot**: set  +  (snapshot name)
+  - **Stack**: set  +  +  +  (stack image slug)
+  - These two are mutually exclusive — do not mix snapshot and stack fields.
 - `load_balancers`, `security_groups`, `target_groups` can be attached/detached after creation without replacing the ASG.
 - `minsize`, `maxsize`, `desiredsize` can be updated in place.
 - Use `lifecycle { ignore_changes = [...] }` for fields that differ between create and read API responses.

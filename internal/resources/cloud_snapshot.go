@@ -3,6 +3,7 @@ package resources
 import (
 	"context"
 	"fmt"
+	"time"
 
 	"github.com/uthoplatforms/terraform-provider-utho/internal/client"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
@@ -106,24 +107,74 @@ func (r *CloudSnapshotResource) Create(ctx context.Context, req resource.CreateR
 		fmt.Sprintf("%s:%s", plan.CloudID.ValueString(), plan.Name.ValueString()),
 	)
 
-	// Look up the snapshot ID from the API by name
+	// Get the cloud instance dcslug for targeted snapshot lookup
+	dcslug := ""
+	if cloud, err2 := r.client.GetCloud(plan.CloudID.ValueString()); err2 == nil && cloud != nil {
+		dcslug = cloud.DCSlug
+	}
+
+	// Poll up to 3 minutes for snapshot to appear in deploy data
 	snapshotID := ""
-	deployData, err2 := r.client.GetCloudDeployData("")
-	if err2 == nil {
+	for attempt := 0; attempt < 18; attempt++ {
+		if attempt > 0 {
+			time.Sleep(10 * time.Second)
+		}
+		deployData, err2 := r.client.GetCloudDeployData(dcslug)
+		if err2 != nil {
+			continue
+		}
 		for _, s := range deployData.Snapshots {
 			if s.Name == plan.Name.ValueString() && s.CloudID == plan.CloudID.ValueString() {
 				snapshotID = s.ID
 				break
 			}
 		}
+		if snapshotID != "" {
+			break
+		}
+	}
+
+	if snapshotID == "" {
+		resp.Diagnostics.AddWarning(
+			"Snapshot ID not yet available",
+			"The snapshot was created but its ID could not be retrieved automatically. Run terraform refresh or set snapshot_id manually from the Utho console.",
+		)
 	}
 	plan.SnapshotID = types.StringValue(snapshotID)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, plan)...)
 }
 
-// READ — no dedicated GET endpoint
+// READ — look up snapshot_id from deploy data if not already set
 func (r *CloudSnapshotResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
+	var state CloudSnapshotModel
+	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	// If snapshot_id already set, keep it
+	if state.SnapshotID.ValueString() != "" {
+		resp.Diagnostics.Append(resp.State.Set(ctx, state)...)
+		return
+	}
+
+	// Try to find snapshot_id from deploy data
+	dcslug := ""
+	if cloud, err := r.client.GetCloud(state.CloudID.ValueString()); err == nil && cloud != nil {
+		dcslug = cloud.DCSlug
+	}
+	deployData, err := r.client.GetCloudDeployData(dcslug)
+	if err == nil {
+		for _, s := range deployData.Snapshots {
+			if s.Name == state.Name.ValueString() && s.CloudID == state.CloudID.ValueString() {
+				state.SnapshotID = types.StringValue(s.ID)
+				break
+			}
+		}
+	}
+
+	resp.Diagnostics.Append(resp.State.Set(ctx, state)...)
 }
 
 // UPDATE — restore snapshot if restore = true

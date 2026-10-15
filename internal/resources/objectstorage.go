@@ -4,13 +4,13 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/uthoplatforms/terraform-provider-utho/internal/client"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/boolplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/uthoplatforms/terraform-provider-utho/internal/client"
 )
 
 // ══════════════════════════════════════════════════════════════
@@ -45,7 +45,7 @@ func (r *ObjectStorageResource) Schema(_ context.Context, _ resource.SchemaReque
 		Description: "Create and manage Utho Object Storage buckets (S3-compatible).",
 		Attributes: map[string]schema.Attribute{
 			"id":              schema.StringAttribute{Computed: true, PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()}},
-			"name":            schema.StringAttribute{Required: true, Description: "Bucket name. Must be unique.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
+			"name":            schema.StringAttribute{Required: true, Description: "Bucket name. Must be globally unique, lowercase only, and may contain letters, numbers, and hyphens. Uppercase letters and underscores are not allowed.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
 			"dcslug":          schema.StringAttribute{Required: true, Description: "Data center slug. Currently only innoida is supported.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
 			"access":          schema.StringAttribute{Optional: true, Computed: true, Description: "Bucket access policy: private, public, or upload. Default: private."},
 			"version_enabled": schema.BoolAttribute{Optional: true, Computed: true, Description: "Enable object versioning. Default: false.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()}},

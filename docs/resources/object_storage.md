@@ -7,7 +7,9 @@ description: |-
 
 # utho_object_storage
 
-Creates and manages a Utho Object Storage bucket. Buckets are S3-compatible — use any AWS S3 SDK, CLI, or library to read and write objects. Terraform manages the bucket; your application manages the objects inside it.
+Creates and manages a Utho Object Storage bucket.
+
+~> **Note:** Bucket names must be **lowercase only** and may contain letters, numbers, and hyphens. Uppercase letters and underscores are rejected by the API. Example: `my-app-uploads` ✅ `My_App_Uploads` ❌ Buckets are S3-compatible — use any AWS S3 SDK, CLI, or library to read and write objects. Terraform manages the bucket; your application manages the objects inside it.
 
 ~> **Note:** Object Storage is currently available only in `innoida` (Delhi/Noida) data center.
 
@@ -116,7 +118,7 @@ resource "utho_object_storage" "tfstate" {
 
 | Argument          | Type   | Required | Description |
 |-------------------|--------|----------|-------------|
-| `name`            | String | Yes      | Bucket name. Must be unique in the data center. Changing this forces a new resource. |
+| `name`            | String | Yes      | Bucket name. Must be globally unique, **lowercase only**, and may contain letters, numbers, and hyphens. Uppercase letters and underscores are not allowed. Changing this forces a new resource. |
 | `dcslug`          | String | Yes      | Data center. Use `innoida` for object storage. Changing this forces a new resource. |
 | `billingcycle`    | String | Yes      | Billing cycle: `monthly`. Changing this forces a new resource. |
 | `access`          | String | No       | Bucket policy: `private` (default), `public` (public read), `upload` (write-only). Can be updated in place. |

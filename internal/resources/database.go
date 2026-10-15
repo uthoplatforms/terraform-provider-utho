@@ -4,12 +4,12 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/uthoplatforms/terraform-provider-utho/internal/client"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/uthoplatforms/terraform-provider-utho/internal/client"
 )
 
 // ══════════════════════════════════════════════════════════════
@@ -72,7 +72,7 @@ func (r *DatabaseResource) Schema(_ context.Context, _ resource.SchemaRequest, r
 			"version":        schema.StringAttribute{Required: true, Description: "Database version (e.g. 17).", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
 			"size":           schema.StringAttribute{Required: true, Description: "Plan ID for the database node size."},
 			"network_type":   schema.StringAttribute{Required: true, Description: "Network type: public or private.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
-			"billing":        schema.StringAttribute{Required: true, Description: "Billing cycle: monthly or hourly."},
+			"billing":        schema.StringAttribute{Required: true, Description: "Billing cycle for the database cluster. Required. Accepted values: hourly, monthly. Use hourly for development/testing and monthly for production workloads."},
 			"pitr_enabled":   schema.StringAttribute{Optional: true, Description: "Enable point-in-time recovery: 1 or 0."},
 			"replica_count":  schema.StringAttribute{Optional: true, Description: "Number of replica nodes to deploy."},
 			"vpc":            schema.StringAttribute{Optional: true, Description: "VPC subnet ID.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},

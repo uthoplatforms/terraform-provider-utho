@@ -4,12 +4,12 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/uthoplatforms/terraform-provider-utho/internal/client"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/uthoplatforms/terraform-provider-utho/internal/client"
 )
 
 // Ensure CloudResource implements ResourceWithImportState
@@ -104,11 +104,11 @@ func (r *CloudResource) Schema(_ context.Context, _ resource.SchemaRequest, resp
 			},
 			"dcslug": schema.StringAttribute{
 				Required:    true,
-				Description: "Data center slug (e.g. innoida, inmumbaizone2).",
+				Description: "Data center slug (e.g. innoida, inmumbaizone2). Use the utho_cloud_dczones data source to list available zones and their supported CPU models.",
 			},
 			"planid": schema.StringAttribute{
 				Required:    true,
-				Description: "Plan ID (e.g. 10308).",
+				Description: "Plan ID for the instance size. Use the utho_cloud_plans data source to list plans available in your chosen dcslug. Not all plans are available in every zone.",
 			},
 			"billingcycle": schema.StringAttribute{
 				Required:    true,
@@ -130,7 +130,7 @@ func (r *CloudResource) Schema(_ context.Context, _ resource.SchemaRequest, resp
 			},
 			"cpumodel": schema.StringAttribute{
 				Required:    true,
-				Description: "CPU model: amd or intel.",
+				Description: "CPU model: amd or intel. Availability varies by data center — check the utho_cloud_dczones data source or the Utho console before setting this value.",
 			},
 			"enablebackup": schema.StringAttribute{
 				Optional:    true,
