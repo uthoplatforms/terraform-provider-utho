@@ -1,0 +1,27 @@
+name: Feature request
+description: Request a new resource, data source, or argument
+labels: ["enhancement"]
+body:
+  - type: input
+    id: service
+    attributes:
+      label: Utho service
+      placeholder: "Kubernetes, Object Storage, DNS..."
+    validations:
+      required: true
+  - type: textarea
+    id: description
+    attributes:
+      label: What would you like to manage with Terraform?
+    validations:
+      required: true
+  - type: textarea
+    id: example
+    attributes:
+      label: Example configuration
+      description: How you imagine the resource or argument would look.
+      render: hcl
+  - type: input
+    id: api
+    attributes:
+      label: Related Utho API endpoint (if known)
