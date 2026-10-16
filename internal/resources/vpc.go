@@ -5,12 +5,12 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/uthoplatforms/terraform-provider-utho/internal/client"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	"github.com/uthoplatforms/terraform-provider-utho/internal/client"
 )
 
 // ══════════════════════════════════════════════════════════════
@@ -24,7 +24,6 @@ type VPCModel struct {
 	Network   types.String `tfsdk:"network"`
 	Size      types.String `tfsdk:"size"`
 	DCSlug    types.String `tfsdk:"dcslug"`
-	PlanID    types.String `tfsdk:"planid"`
 	IsDefault types.String `tfsdk:"is_default"`
 	Total     types.Int64  `tfsdk:"total"`
 	Available types.Int64  `tfsdk:"available"`
@@ -45,7 +44,6 @@ func (r *VPCResource) Schema(_ context.Context, _ resource.SchemaRequest, resp *
 			"network":    schema.StringAttribute{Required: true, Description: "Network address (e.g. 10.0.3.0).", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
 			"size":       schema.StringAttribute{Required: true, Description: "CIDR prefix size (e.g. 24).", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
 			"dcslug":     schema.StringAttribute{Required: true, Description: "Data center slug.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
-			"planid":     schema.StringAttribute{Required: true, Description: "VPC plan ID.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
 			"is_default": schema.StringAttribute{Computed: true, Description: "Whether this is the default VPC."},
 			"total":      schema.Int64Attribute{Computed: true, Description: "Total IPs in the VPC."},
 			"available":  schema.Int64Attribute{Computed: true, Description: "Available IPs in the VPC."},
@@ -74,7 +72,7 @@ func (r *VPCResource) Create(ctx context.Context, req resource.CreateRequest, re
 
 	id, err := r.client.CreateVPC(&client.VPCCreateRequest{
 		Name: plan.Name.ValueString(), Network: plan.Network.ValueString(),
-		Size: plan.Size.ValueString(), DCSlug: plan.DCSlug.ValueString(), PlanID: plan.PlanID.ValueString(),
+		Size: plan.Size.ValueString(), DCSlug: plan.DCSlug.ValueString(),
 	})
 	if err != nil {
 		resp.Diagnostics.AddError("Error creating VPC", fmt.Sprintf("%s", err))

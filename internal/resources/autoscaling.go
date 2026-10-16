@@ -154,17 +154,17 @@ func (r *AutoScalingResource) Schema(_ context.Context, _ resource.SchemaRequest
 			"minsize":           schema.StringAttribute{Required: true, Description: "Minimum number of instances."},
 			"maxsize":           schema.StringAttribute{Required: true, Description: "Maximum number of instances."},
 			"desiredsize":       schema.StringAttribute{Required: true, Description: "Desired number of instances."},
-			"planid":            schema.StringAttribute{Required: true, Description: "Plan ID for instance size.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
-			"planname":          schema.StringAttribute{Required: true, Description: "Plan slug (e.g. basic).", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
+			"planid":            schema.StringAttribute{Required: true, Description: "Plan ID for the instance size (e.g. 10404). Use the utho_cloud_plans data source to find available plan IDs for your dcslug.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
+			"planname":          schema.StringAttribute{Required: true, Description: "Plan name or label corresponding to the planid (e.g. basic, standard). This is a display label sent to the API alongside planid — it does not need to match the planid exactly as the API does not cross-validate them. Use the name field from utho_cloud_plans data source.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
 			"os_disk_size":      schema.Int64Attribute{Required: true, Description: "OS disk size in GB.", PlanModifiers: []planmodifier.Int64{int64planmodifier.RequiresReplace()}},
 			"public_ip_enabled": schema.Int64Attribute{Required: true, Description: "Enable public IP: 1 or 0."},
 
 			// Deployment source — at least one required (validated at Create)
-			"image_name": schema.StringAttribute{Optional: true, Description: "For stack deployment: set to the stack image slug (same as stackimage). For snapshot deployment: set to the snapshot name.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
-			"snapshotid": schema.StringAttribute{Optional: true, Description: "Snapshot ID for snapshot-based deployment.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
-			"stack":      schema.StringAttribute{Optional: true, Description: "Stack ID (same as stackid).", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
-			"stackid":    schema.StringAttribute{Optional: true, Description: "Stack ID for stack-based deployment.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
-			"stackimage": schema.StringAttribute{Optional: true, Description: "Stack image slug.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
+			"image_name": schema.StringAttribute{Optional: true, Description: "Boot image name. For snapshot deployment: set to the snapshot name. For stack deployment: set to the stack image slug (same as stackimage). Required when using snapshot or stack deployment.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
+			"snapshotid": schema.StringAttribute{Optional: true, Description: "Snapshot ID for snapshot-based deployment. Use this OR stackid+stackimage — not both. When set, also set image_name to the snapshot name.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
+			"stack":      schema.StringAttribute{Optional: true, Description: "Stack slug (same as stackid). Use this with stackid and stackimage for stack-based deployment.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
+			"stackid":    schema.StringAttribute{Optional: true, Description: "Stack ID for stack-based deployment. Use this OR snapshotid — not both. When set, also set stackimage and image_name.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
+			"stackimage": schema.StringAttribute{Optional: true, Description: "Stack image slug. Required when using stack-based deployment (stackid). Also set image_name to the same value.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},
 
 			// Optional
 			"vpc":             schema.StringAttribute{Optional: true, Description: "VPC subnet ID.", PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()}},

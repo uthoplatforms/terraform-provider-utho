@@ -4,10 +4,10 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/uthoplatforms/terraform-provider-utho/internal/client"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	"github.com/uthoplatforms/terraform-provider-utho/internal/client"
 )
 
 // ── Data source struct ────────────────────────────────────────────────────

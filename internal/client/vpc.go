@@ -13,7 +13,6 @@ type VPCCreateRequest struct {
 	Network string `json:"network"`
 	Size    string `json:"size"`
 	DCSlug  string `json:"dcslug"`
-	PlanID  string `json:"planid"`
 }
 
 type SubnetCreateRequest struct {

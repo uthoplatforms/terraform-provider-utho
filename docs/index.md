@@ -26,6 +26,7 @@ To learn the basics of Terraform using this provider, follow the [Getting Starte
 | **Load Balancing** | [`utho_loadbalancer`](resources/loadbalancer), [`utho_loadbalancer_frontend`](resources/loadbalancer_frontend), [`utho_loadbalancer_backend`](resources/loadbalancer_backend), [`utho_loadbalancer_acl`](resources/loadbalancer_acl), [`utho_loadbalancer_settings`](resources/loadbalancer_settings) | |
 | **Security Groups** | [`utho_firewall`](resources/firewall), [`utho_firewall_rule`](resources/firewall_rule), [`utho_firewall_server`](resources/firewall_server) | [`utho_firewalls`](data-sources/firewalls) |
 | **Elastic IP** | [`utho_elastic_ip`](resources/elastic_ip) | |
+| **Elastic Block Storage** | [`utho_ebs`](resources/ebs), [`utho_ebs_attachment`](resources/ebs_attachment) | [`utho_ebs_dczones`](data-sources/ebs_dczones) |
 | **VPN (IPSec)** | [`utho_ipsec`](resources/ipsec), [`utho_ipsec_connection`](resources/ipsec_connection) | |
 | **DNS** | [`utho_dns_zone`](resources/dns_zone), [`utho_dns_record`](resources/dns_record) | |
 | **SSL Certificates** | [`utho_ssl_certificate`](resources/ssl_certificate) | |

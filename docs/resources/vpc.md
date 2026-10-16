@@ -21,7 +21,6 @@ resource "utho_vpc" "main" {
   network = "10.0.0.0"
   size    = "16"
   dcslug  = "inmumbaizone2"
-  planid  = "1008"
 }
 ```
 
@@ -35,7 +34,6 @@ resource "utho_vpc" "main" {
   network = "10.0.0.0"
   size    = "16"
   dcslug  = "inmumbaizone2"
-  planid  = "1008"
 }
 
 resource "utho_subnet" "public" {
@@ -67,7 +65,6 @@ resource "utho_vpc" "main" {
   network = "10.0.0.0"
   size    = "16"
   dcslug  = "inmumbaizone2"
-  planid  = "1008"
 }
 
 resource "utho_subnet" "public" {
@@ -135,7 +132,6 @@ resource "utho_cloud" "app" {
 | `network` | String | Yes      | Base network address in CIDR notation (e.g. `10.0.0.0`). Changing this forces a new resource. |
 | `size`    | String | Yes      | CIDR prefix length (e.g. `16` for a /16 with 65,536 IPs). Changing this forces a new resource. |
 | `dcslug`  | String | Yes      | Data center slug. Changing this forces a new resource. |
-| `planid`  | String | Yes      | VPC plan ID. Changing this forces a new resource. |
 
 ## Attribute Reference
 

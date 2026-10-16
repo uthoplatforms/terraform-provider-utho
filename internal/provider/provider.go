@@ -4,14 +4,14 @@ import (
 	"context"
 	"os"
 
+	"github.com/uthoplatforms/terraform-provider-utho/internal/client"
+	"github.com/uthoplatforms/terraform-provider-utho/internal/datasources"
+	"github.com/uthoplatforms/terraform-provider-utho/internal/resources"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/provider"
 	"github.com/hashicorp/terraform-plugin-framework/provider/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	"github.com/uthoplatforms/terraform-provider-utho/internal/client"
-	"github.com/uthoplatforms/terraform-provider-utho/internal/datasources"
-	"github.com/uthoplatforms/terraform-provider-utho/internal/resources"
 )
 
 type uthoProvider struct{}
@@ -37,7 +37,7 @@ func (p *uthoProvider) Schema(_ context.Context, _ provider.SchemaRequest, resp 
 		Description: "Interact with Utho Cloud resources.",
 		Attributes: map[string]schema.Attribute{
 			"api_key": schema.StringAttribute{
-				Optional:    true,
+				Required:    true,
 				Sensitive:   true,
 				Description: "Utho API key. Can also be set via UTHO_API_KEY environment variable.",
 			},
@@ -130,6 +130,8 @@ func (p *uthoProvider) Resources(_ context.Context) []func() resource.Resource {
 		resources.NewRegistryRobotResource,           // utho_container_registry_robot
 		resources.NewRegistryWebhookResource,         // utho_container_registry_webhook
 		resources.NewRegistryImmutableRuleResource,   // utho_container_registry_immutable_rule
+		resources.NewEBSResource,                     // utho_ebs
+		resources.NewEBSAttachmentResource,           // utho_ebs_attachment
 
 	}
 }
@@ -154,5 +156,6 @@ func (p *uthoProvider) DataSources(_ context.Context) []func() datasource.DataSo
 		datasources.NewBillingUsageDataSource,         // data.utho_billing_usage
 		datasources.NewBillingInvoicesDataSource,      // data.utho_billing_invoices
 		datasources.NewBillingCostByProjectDataSource, // data.utho_billing_cost_by_project
+		datasources.NewEBSDCZonesDataSource,           // data.utho_ebs_dczones
 	}
 }

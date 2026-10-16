@@ -11,6 +11,8 @@ Creates and manages a fully managed database cluster on Utho. Supports MySQL, Po
 
 ~> **Note:** Database clusters take 4-10 minutes to provision. Terraform polls until the cluster is Active and all connection strings are available.
 
+-> **Required:** The `billing` argument is required and must be set to `hourly` or `monthly`. Omitting it will cause the plan to fail immediately.
+
 ## Example Usage
 
 ### MySQL cluster
@@ -81,6 +83,22 @@ resource "utho_database" "secured" {
   billing       = "hourly"
   replica_count = "0"
 }
+```
+
+### Connection and TLS guidance
+
+~> **Note:** Utho managed databases do not support SSL/TLS connections. Use `sslmode=disable` (PostgreSQL) or omit SSL flags (MySQL/MariaDB) when connecting. Using `sslmode=require` will result in `server does not support SSL` errors.
+
+Connect to PostgreSQL without SSL:
+
+```bash
+psql "host=<host> port=5432 dbname=defaultdb user=dbadmin sslmode=disable"
+```
+
+Connect to MySQL without SSL:
+
+```bash
+mysql -h <host> -P 3306 -u dbadmin -p defaultdb
 ```
 
 ### Use connection string in app server
