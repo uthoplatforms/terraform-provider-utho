@@ -4,14 +4,14 @@ import (
 	"context"
 	"os"
 
-	"github.com/uthoplatforms/terraform-provider-utho/internal/client"
-	"github.com/uthoplatforms/terraform-provider-utho/internal/datasources"
-	"github.com/uthoplatforms/terraform-provider-utho/internal/resources"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/provider"
 	"github.com/hashicorp/terraform-plugin-framework/provider/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/uthoplatforms/terraform-provider-utho/internal/client"
+	"github.com/uthoplatforms/terraform-provider-utho/internal/datasources"
+	"github.com/uthoplatforms/terraform-provider-utho/internal/resources"
 )
 
 type uthoProvider struct{}
@@ -132,7 +132,9 @@ func (p *uthoProvider) Resources(_ context.Context) []func() resource.Resource {
 		resources.NewRegistryImmutableRuleResource,   // utho_container_registry_immutable_rule
 		resources.NewEBSResource,                     // utho_ebs
 		resources.NewEBSAttachmentResource,           // utho_ebs_attachment
-
+		resources.NewTargetGroupResource,             // utho_target_group
+		resources.NewTargetGroupTargetResource,       // utho_target_group_target
+		resources.NewISOResource,                     // utho_iso
 	}
 }
 
